@@ -14,10 +14,10 @@ namespace Subsistence
             if(cache.TryGetValue(id,out var texture))return texture;
             pixels=new Color32[S*S];Color baseColor=new Color(.075f,.095f,.078f);
             for(int y=0;y<S;y++)for(int x=0;x<S;x++)
-            {float shade=.78f+.22f*y/S;pixels[y*S+x]=(Color32)(baseColor*shade);}
+            {float backdropTone=.78f+.22f*y/S;pixels[y*S+x]=(Color32)(baseColor*backdropTone);}
             Color32 border=new Color32(105,107,79,255);DrawRect(2,2,60,60,border);DrawRect(3,3,58,58,new Color32(23,29,24,255));
             DrawRect(6,55,52,1,new Color32(168,149,94,255));
-            Color32 main=(Color32)ItemCatalog.Get(id).iconColor;Color32 shade=Dark(main,.62f),light=Light(main,1.24f);int cx=32;
+            Color32 main=(Color32)ItemCatalog.Get(id).iconColor;Color32 shade=Dark(main,.62f),light=Light(main,1.24f);
             switch(id)
             {
                 case ItemId.Water:

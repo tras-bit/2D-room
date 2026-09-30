@@ -44,7 +44,7 @@
 ## Структура проекта
 
 - `Assets/Scripts/` — генерация 2.5D-комнат, управление, инвентарь, крафт, контейнеры, экипировка и интерфейс.
-- `Assets/Resources/Art/` — текстуры обоев и ковра Backrooms.
+- `Assets/Resources/Art/` — текстуры Backrooms для мира и кинематографический фон меню.
 - `Assets/Resources/Audio/` — музыка и звуковые эффекты.
 - `Assets/Editor/FieldTestProjectSetup.cs` — создание стартовой сцены при первом открытии.
 - `RESEARCH.md` — технические решения и ссылки на документацию Unity.

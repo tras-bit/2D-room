@@ -15,6 +15,7 @@ namespace Subsistence
         readonly Color ink=new Color(.91f,.91f,.84f),lime=new Color(.82f,.90f,.58f),muted=new Color(.62f,.67f,.59f),gold=new Color(.78f,.66f,.40f),copper=new Color(.77f,.36f,.18f);
         float uiScale,uiScaleSetting=.94f,brightnessSetting=.5f;ScreenMode returnMode=ScreenMode.MainMenu;bool fullscreen=true,craftTab,showInteractionHints=true,showNotices=true;int selectedSector,settingsTab,qualityIndex,vSyncSetting=1,resolutionIndex;
         CharacterPreview preview;InventorySystem bag;ItemStack held;int selectedKind=-1,selectedIndex=-1;
+        Texture2D menuBackdrop;
         Resolution[] resolutions;
         string[] sectorNames={"ВЛОЖЕННЫЙ СЕКТОР #01","ОФИСНЫЙ ЛАБИРИНТ","ЗАТОПЛЕННЫЙ КОРПУС","ТЕХНИЧЕСКИЙ СЕКТОР"};
         string[] sectorInfo={"Жёлтые комнаты · низкий риск · базовые припасы","Пустые рабочие места · ресурсы и первые следы","Влажные коридоры · электроника · высокий риск","Оружейный тайник · броня · критический риск"};
@@ -22,6 +23,7 @@ namespace Subsistence
 
         void Awake()
         {
+            menuBackdrop=Resources.Load<Texture2D>("Art/menu_backrooms");
             fullscreen=PlayerPrefs.GetInt("Subsistence.Fullscreen",1)!=0;
             brightnessSetting=PlayerPrefs.GetFloat("Subsistence.Brightness",.5f);
             uiScaleSetting=PlayerPrefs.GetFloat("Subsistence.UIScale",.94f);
@@ -92,8 +94,7 @@ namespace Subsistence
             for(int i=0;i<12;i++)DrawRect(R(leftW+i*Screen.width*.006f,0,Screen.width*.0061f,Screen.height),new Color(.012f,.014f,.011f,.91f-i*.068f));
             float x=66*uiScale,y=52*uiScale,w=Mathf.Min(leftW-112*uiScale,520*uiScale);
             DrawRect(R(x,y,356*uiScale,2*uiScale),copper);
-            DrawRect(R(x+5*uiScale,y+20*uiScale,43*uiScale,43*uiScale),new Color(.02f,.02f,.017f,.4f));Outline(R(x+5*uiScale,y+20*uiScale,43*uiScale,43*uiScale),copper);
-            Label("╱",R(x+10*uiScale,y+19*uiScale,38*uiScale,44*uiScale),heading,copper);
+            DrawGameLogo(R(x+5*uiScale,y+20*uiScale,43*uiScale,43*uiScale));
             Label("SUBSISTENCE",R(x+62*uiScale,y+14*uiScale,w-70*uiScale,48*uiScale),title,ink);
             Label("В Ы Ж И В А Н И Е     /     Л И М И Н А Л Ь Н А Я   З О Н А",R(x+64*uiScale,y+62*uiScale,w-70*uiScale,20*uiScale),tiny,muted);
             Label("С Е К Т О Р   0 9     •     С И Г Н А Л   Н Е С Т А Б И Л Е Н",R(x+5*uiScale,y+120*uiScale,w-10*uiScale,20*uiScale),mono,ink);
@@ -110,6 +111,18 @@ namespace Subsistence
             DrawRule(x+5*uiScale,footerY+55*uiScale,w-18*uiScale);
             Label("LOCAL FIELD TEST  ·  ОДИНОЧНЫЙ ПРОТОТИП",R(x+5*uiScale,footerY+68*uiScale,w-10*uiScale,16*uiScale),mono,muted);
             DrawMenuStatus();DrawSignalCard();
+        }
+        void DrawGameLogo(Rect rect)
+        {
+            DrawRect(rect,new Color(.025f,.028f,.023f,.82f));Outline(rect,copper);
+            Matrix4x4 previous=GUI.matrix;
+            GUIUtility.RotateAroundPivot(22f,rect.center);
+            float cx=rect.center.x,cy=rect.center.y;
+            DrawRect(R(cx-10*uiScale,cy-12*uiScale,4*uiScale,24*uiScale),copper);
+            DrawRect(R(cx-2*uiScale,cy-12*uiScale,4*uiScale,24*uiScale),new Color(.82f,.70f,.44f));
+            DrawRect(R(cx+6*uiScale,cy-12*uiScale,4*uiScale,24*uiScale),copper);
+            GUI.matrix=previous;
+            DrawRect(R(rect.x+8*uiScale,rect.y+rect.height-7*uiScale,rect.width-16*uiScale,2*uiScale),new Color(.77f,.36f,.18f,.56f));
         }
 
         void DrawMenuAction(string titleText,string subtitle,Rect rect,System.Action action)
@@ -147,7 +160,7 @@ namespace Subsistence
         }
         void DrawSectorSelect()
         {
-            DrawBackdrop();float panelW=Screen.width*.95f,panelH=Screen.height*.93f;Rect r=CenteredPanel(panelW,panelH);Panel(r,new Color(.025f,.029f,.024f,.96f));
+            DrawBackdrop();float panelW=Screen.width*.95f,panelH=Screen.height*.93f;Rect r=CenteredPanel(panelW,panelH);Panel(r,new Color(.025f,.029f,.024f,.90f));
             Label("S U B S I S T E N C E   /   С Е Т Ь   У Б Е Ж И Щ",R(r.x+28*uiScale,r.y+20*uiScale,r.width-56*uiScale,17*uiScale),tiny,muted);
             Label("ВЫБОР СЕРВЕРА",R(r.x+27*uiScale,r.y+48*uiScale,r.width*.65f,44*uiScale),title,ink);
             Label("НАЙДИ СЕКТОР, ГДЕ МОЖНО ПЕРЕЖИТЬ ЭТУ НОЧЬ",R(r.x+30*uiScale,r.y+99*uiScale,r.width*.65f,18*uiScale),mono,muted);
@@ -156,7 +169,7 @@ namespace Subsistence
             Label("ЛОКАЛЬНЫЙ РЕЖИМ  ·  0 ОНЛАЙН-СЕРВЕРОВ",R(net.x+12*uiScale,net.y+27*uiScale,net.width-24*uiScale,13*uiScale),tiny,muted);
             DrawRule(r.x+28*uiScale,r.y+127*uiScale,r.width-56*uiScale);
             float leftX=r.x+25*uiScale,leftW=r.width*.225f,listX=leftX+leftW+19*uiScale,listW=r.x+r.width-28*uiScale-listX;
-            Rect filter=R(leftX,r.y+145*uiScale,leftW,Mathf.Min(392*uiScale,r.height*.51f));Panel(filter,new Color(.044f,.049f,.041f,.94f));
+            Rect filter=R(leftX,r.y+145*uiScale,leftW,Mathf.Min(392*uiScale,r.height*.51f));Panel(filter,new Color(.044f,.049f,.041f,.88f));
             Label("Ф И Л Ь Т Р Ы",R(filter.x+14*uiScale,filter.y+13*uiScale,filter.width-28*uiScale,22*uiScale),mono,ink);
             DrawRule(filter.x+13*uiScale,filter.y+44*uiScale,filter.width-26*uiScale);
             Label("ТИП ПОДКЛЮЧЕНИЯ",R(filter.x+14*uiScale,filter.y+59*uiScale,filter.width-28*uiScale,15*uiScale),tiny,muted);
@@ -179,7 +192,7 @@ namespace Subsistence
             Label("ДОБЫЧА",R(listX+listW*.82f,tableY+8*uiScale,listW*.14f,14*uiScale),tiny,muted);
             for(int i=0;i<4;i++)
             {
-                float yy=tableY+headH+i*(rowH+2*uiScale);Rect row=R(listX,yy,listW,rowH);Panel(row,i==selectedSector?new Color(.24f,.105f,.055f,.92f):new Color(.035f,.040f,.034f,.90f));
+                float yy=tableY+headH+i*(rowH+2*uiScale);Rect row=R(listX,yy,listW,rowH);Panel(row,i==selectedSector?new Color(.24f,.105f,.055f,.90f):new Color(.035f,.040f,.034f,.82f));
                 bool clicked=GUI.Button(row,GUIContent.none,GUIStyle.none);if(clicked)selectedSector=i;
                 if(i==selectedSector)DrawRect(R(row.x,row.y,4*uiScale,row.height),copper);
                 DrawRect(R(row.x+14*uiScale,row.y+21*uiScale,8*uiScale,8*uiScale),i<2?lime:gold);
@@ -188,7 +201,7 @@ namespace Subsistence
                 Label(i==0?"НИЗКИЙ":i==1?"СРЕДНИЙ":i==2?"ВЫСОКИЙ":"КРИТИЧЕСКИЙ",R(row.x+listW*.68f,row.y+17*uiScale,listW*.14f,17*uiScale),tiny,i<2?lime:gold);
                 Label(i==0?"I":i==1?"I—II":i==2?"II":"III",R(row.x+listW*.84f,row.y+17*uiScale,listW*.11f,17*uiScale),tiny,ink);
             }
-            float detailY=tableY+headH+4*(rowH+2*uiScale)+19*uiScale;Rect detail=R(listX,detailY,listW,r.y+r.height-72*uiScale-detailY);Panel(detail,new Color(.037f,.043f,.036f,.95f));DrawRect(R(detail.x,detail.y,4*uiScale,detail.height),copper);
+            float detailY=tableY+headH+4*(rowH+2*uiScale)+19*uiScale;Rect detail=R(listX,detailY,listW,r.y+r.height-72*uiScale-detailY);Panel(detail,new Color(.037f,.043f,.036f,.88f));DrawRect(R(detail.x,detail.y,4*uiScale,detail.height),copper);
             Label("ВЫБРАННЫЙ СЕКТОР",R(detail.x+19*uiScale,detail.y+12*uiScale,listW*.48f,14*uiScale),tiny,copper);
             Label(sectorNames[selectedSector],R(detail.x+19*uiScale,detail.y+35*uiScale,listW*.56f,24*uiScale),heading,ink);
             Label(sectorInfo[selectedSector],R(detail.x+19*uiScale,detail.y+65*uiScale,listW*.61f,33*uiScale),small,muted);
@@ -200,8 +213,15 @@ namespace Subsistence
         string ShortSectorName(int i){return i==0?"ВЛОЖЕННЫЙ":i==1?"ОФИС":i==2?"ЗАТОПЛЕННЫЙ":"ТЕХНИЧЕСКИЙ";}
         void DrawBackdrop()
         {
-            DrawRect(new Rect(0,0,Screen.width,Screen.height),new Color(.012f,.016f,.012f,.38f));
-            DrawRect(new Rect(0,Screen.height*.84f,Screen.width,Screen.height*.16f),new Color(.008f,.010f,.008f,.38f));
+            Rect screen=new Rect(0,0,Screen.width,Screen.height);
+            if(MenuBackdropActive&&menuBackdrop!=null)
+            {
+                GUI.DrawTexture(screen,menuBackdrop,ScaleMode.ScaleAndCrop,true);
+                DrawRect(screen,new Color(.018f,.020f,.016f,.25f));
+                DrawRect(new Rect(0,Screen.height*.78f,Screen.width,Screen.height*.22f),new Color(.008f,.010f,.008f,.48f));
+            }
+            else DrawRect(screen,new Color(.012f,.016f,.012f,.38f));
+            DrawRect(new Rect(0,0,Screen.width,Screen.height*.035f),new Color(.008f,.010f,.008f,.22f));
         }
         void DrawGameHUD()
         {
@@ -447,7 +467,7 @@ namespace Subsistence
         }
         void DrawSettings()
         {
-            DrawBackdrop();float pw=Mathf.Min(Screen.width*.94f,1420*uiScale),ph=Mathf.Min(Screen.height*.92f,840*uiScale);Rect r=CenteredPanel(pw,ph);Panel(r,new Color(.025f,.030f,.025f,.97f));
+            DrawBackdrop();float pw=Mathf.Min(Screen.width*.94f,1420*uiScale),ph=Mathf.Min(Screen.height*.92f,840*uiScale);Rect r=CenteredPanel(pw,ph);Panel(r,new Color(.025f,.030f,.025f,.91f));
             Label("S U B S I S T E N C E  /  С И С Т Е М А",R(r.x+26*uiScale,r.y+18*uiScale,r.width*.62f,16*uiScale),tiny,muted);
             Label("НАСТРОЙКИ",R(r.x+25*uiScale,r.y+46*uiScale,r.width*.7f,45*uiScale),title,ink);
             Label("ПОДГОТОВЬСЯ К ВЫХОДУ В КОРИДОР",R(r.x+30*uiScale,r.y+96*uiScale,r.width*.6f,16*uiScale),mono,muted);
@@ -461,7 +481,7 @@ namespace Subsistence
                 bool clicked=GUI.Button(tr,GUIContent.none,GUIStyle.none);if(i==settingsTab)DrawRect(R(tr.x,tr.y,4*uiScale,tr.height),copper);
                 Label(tabs[i],R(tr.x+16*uiScale,tr.y+14*uiScale,tr.width-30*uiScale,18*uiScale),mono,i==settingsTab?ink:muted);if(clicked)settingsTab=i;
             }
-            Rect content=R(contentX,contentY,contentW,contentH);Panel(content,new Color(.037f,.043f,.036f,.93f));
+            Rect content=R(contentX,contentY,contentW,contentH);Panel(content,new Color(.037f,.043f,.036f,.87f));
             if(settingsTab==0)DrawGraphicsSettings(content);
             else if(settingsTab==1)DrawSoundSettings(content);
             else if(settingsTab==2)DrawControlRows(content);
@@ -552,7 +572,7 @@ namespace Subsistence
 
         void DrawControls()
         {
-            DrawBackdrop();Rect r=CenteredPanel(Mathf.Min(900*uiScale,Screen.width*.90f),Mathf.Min(650*uiScale,Screen.height*.90f));Panel(r,new Color(.025f,.030f,.025f,.97f));
+            DrawBackdrop();Rect r=CenteredPanel(Mathf.Min(900*uiScale,Screen.width*.90f),Mathf.Min(650*uiScale,Screen.height*.90f));Panel(r,new Color(.025f,.030f,.025f,.91f));
             Label("S U B S I S T E N C E  /  С И С Т Е М А",R(r.x+25*uiScale,r.y+20*uiScale,r.width-50*uiScale,16*uiScale),tiny,muted);
             Label("УПРАВЛЕНИЕ",R(r.x+24*uiScale,r.y+50*uiScale,r.width-48*uiScale,44*uiScale),title,ink);
             DrawControlRows(R(r.x+24*uiScale,r.y+115*uiScale,r.width-48*uiScale,r.height-195*uiScale));
@@ -560,7 +580,7 @@ namespace Subsistence
         }
         void DrawSupport()
         {
-            DrawBackdrop();Rect r=CenteredPanel(Mathf.Min(850*uiScale,Screen.width*.90f),Mathf.Min(590*uiScale,Screen.height*.90f));Panel(r,new Color(.025f,.030f,.025f,.97f));
+            DrawBackdrop();Rect r=CenteredPanel(Mathf.Min(850*uiScale,Screen.width*.90f),Mathf.Min(590*uiScale,Screen.height*.90f));Panel(r,new Color(.025f,.030f,.025f,.91f));
             Label("S U B S I S T E N C E  /  FIELD SUPPORT",R(r.x+26*uiScale,r.y+21*uiScale,r.width-52*uiScale,16*uiScale),tiny,muted);
             Label("ПОДДЕРЖКА",R(r.x+25*uiScale,r.y+53*uiScale,r.width-50*uiScale,48*uiScale),title,ink);
             Label("ЭТА СБОРКА РАБОТАЕТ ЛОКАЛЬНО",R(r.x+29*uiScale,r.y+113*uiScale,r.width-58*uiScale,19*uiScale),mono,copper);
@@ -574,7 +594,7 @@ namespace Subsistence
         }
         void DrawEndCard(bool won)
         {
-            DrawBackdrop();Rect r=CenteredPanel(500*uiScale,330*uiScale);Panel(r,new Color(.045f,.06f,.05f,.97f));Accent(r.x,r.y,r.height);
+            DrawBackdrop();Rect r=CenteredPanel(500*uiScale,330*uiScale);Panel(r,new Color(.045f,.06f,.05f,.91f));Accent(r.x,r.y,r.height);
             Label(won?"СЕКТОР ПОКИНУТ":"СМЕНА ЗАВЕРШЕНА",R(r.x+28*uiScale,r.y+32*uiScale,r.width-56*uiScale,50*uiScale),heading,ink);
             Label(won?"Ты выбрался из этого крыла. В глубине снова загорается свет.":"Сталкер оказался быстрее. Попробуй другой сектор.",R(r.x+30*uiScale,r.y+99*uiScale,r.width-60*uiScale,55*uiScale),body,muted);
             if(Button("НАЧАТЬ СНОВА",R(r.x+30*uiScale,r.y+188*uiScale,r.width-60*uiScale,40*uiScale),lightButton))StartRun();if(Button("ГЛАВНОЕ МЕНЮ",R(r.x+30*uiScale,r.y+240*uiScale,r.width-60*uiScale,40*uiScale),darkButton))SetMode(ScreenMode.MainMenu);
