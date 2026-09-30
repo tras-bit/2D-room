@@ -11,7 +11,7 @@ namespace Subsistence
         SpriteRenderer spriteRenderer;
         SpriteRenderer flashlightSprite;
         Transform flashlightTransform;
-        PixelFrameAnimator animation;
+        PixelFrameAnimator spriteAnimator;
         bool grounded;
         float attackVisual;
         bool flashlightOn = true;
@@ -26,7 +26,7 @@ namespace Subsistence
         {
             body = GetComponent<Rigidbody2D>();
             spriteRenderer = GetComponent<SpriteRenderer>();
-            animation = GetComponent<PixelFrameAnimator>();
+            spriteAnimator = GetComponent<PixelFrameAnimator>();
         }
 
         public void SetFlashlightVisual(SpriteRenderer visual, Transform visualTransform)
@@ -45,7 +45,7 @@ namespace Subsistence
                 {
                     body.velocity = new Vector2(body.velocity.x, JumpVelocity);
                     grounded = false;
-                    animation?.Play("jump", true);
+                    spriteAnimator?.Play("jump", true);
                 }
             }
             if (Input.GetKeyDown(KeyCode.E)) Interact();
@@ -62,11 +62,11 @@ namespace Subsistence
             }
             else footstepClock = 0;
             attackVisual = Mathf.Max(0, attackVisual - Time.deltaTime);
-            if (animation != null && attackVisual <= 0)
+            if (spriteAnimator != null && attackVisual <= 0)
             {
-                if (!grounded) animation.Play("jump");
-                else if (Mathf.Abs(horizontal) > .05f) animation.Play("walk");
-                else animation.Play("idle");
+                if (!grounded) spriteAnimator.Play("jump");
+                else if (Mathf.Abs(horizontal) > .05f) spriteAnimator.Play("walk");
+                else spriteAnimator.Play("idle");
             }
         }
 
@@ -106,7 +106,7 @@ namespace Subsistence
         {
             attackCooldown = .38f;
             attackVisual = .28f;
-            animation?.Play("attack", true);
+            spriteAnimator?.Play("attack", true);
             AudioDirector.Instance?.Play("swipe", .72f);
             var watcher = FindObjectOfType<WatcherAI>();
             if (watcher != null && Mathf.Abs(watcher.transform.position.x - transform.position.x) < 2.1f)
@@ -118,7 +118,7 @@ namespace Subsistence
         {
             if (invulnerable > 0 || RunState.Instance == null || !GameHUD.IsPlaying) return;
             invulnerable = .72f;
-            animation?.Play("hurt", true);
+            spriteAnimator?.Play("hurt", true);
             AudioDirector.Instance?.Play("hit", .8f);
             RunState.Instance.TakeDamage(damage);
             spriteRenderer.color = new Color(1f,.62f,.48f);
@@ -144,7 +144,7 @@ namespace Subsistence
             flashlightOn = true;
             if (flashlightSprite != null) flashlightSprite.enabled = true;
             if (spriteRenderer != null) spriteRenderer.color = Color.white;
-            animation?.Play("idle", true);
+            spriteAnimator?.Play("idle", true);
         }
 
         void ToggleFlashlight()

@@ -9,7 +9,7 @@ namespace Subsistence
         public float ChaseSpeed = 2.75f;
         Rigidbody2D body;
         SpriteRenderer spriteRenderer;
-        PixelFrameAnimator animation;
+        PixelFrameAnimator spriteAnimator;
         Transform target;
         float stunTimer;
         float attackTimer;
@@ -21,7 +21,7 @@ namespace Subsistence
         {
             body = GetComponent<Rigidbody2D>();
             spriteRenderer = GetComponent<SpriteRenderer>();
-            animation = GetComponent<PixelFrameAnimator>();
+            spriteAnimator = GetComponent<PixelFrameAnimator>();
             originX = transform.position.x;
         }
 
@@ -39,11 +39,11 @@ namespace Subsistence
                 stunTimer -= Time.fixedDeltaTime;
                 body.MovePosition(body.position);
                 spriteRenderer.color = new Color(.68f,.78f,.59f);
-                animation?.Play("stunned");
+                spriteAnimator?.Play("stunned");
                 return;
             }
             spriteRenderer.color = Color.white;
-            animation?.Play("patrol");
+            spriteAnimator?.Play("patrol");
             float dx = target.position.x - transform.position.x;
             float distance = Mathf.Abs(dx);
             float speed;
@@ -69,14 +69,14 @@ namespace Subsistence
         {
             isGone=false;stunTimer=0;attackTimer=0;patrolClock=0;
             body.position=new Vector2(originX,0f);spriteRenderer.color=Color.white;
-            animation?.Play("patrol",true);
+            spriteAnimator?.Play("patrol",true);
         }
 
         public void Stun(float seconds)
         {
             if (isGone) return;
             stunTimer = Mathf.Max(stunTimer, seconds);
-            animation?.Play("stunned",true);
+            spriteAnimator?.Play("stunned",true);
             AudioDirector.Instance?.Play("stun",.85f);
             RunState.Instance?.Notify("Ударил его — беги, пока оно оглушено.");
         }
