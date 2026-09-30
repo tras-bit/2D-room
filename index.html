@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#10110f" />
+  <meta name="description" content="Интерактивный бриф из 20 вопросов для создания 2D survival-хоррора Subsistence на Unity." />
+  <title>SUBSISTENCE — Бриф игры</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Subsistence, наверх">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      <span>SUBSISTENCE<span class="brand-sub">PROJECT / 001</span></span>
+    </a>
+    <div class="top-meta"><span class="live-dot"></span> GAME DESIGN INTAKE <span class="meta-divider">/</span> UNITY 2022.3.62f2</div>
+    <button class="top-save" id="saveStatus" type="button" aria-live="polite"><span class="save-icon">✓</span> <span>Сохранено</span></button>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>НАЧАЛО РАЗРАБОТКИ</span><span class="eyebrow-line"></span><span>20 ВОПРОСОВ</span></div>
+        <h1>Сначала —<br /><em>представь.</em></h1>
+        <p class="hero-text">Соберём твой замысел в понятный план. Ответь на вопросы о <strong>Subsistence</strong> — мрачной 2D-игре на выживание с атмосферой Rust и Backrooms.</p>
+        <div class="hero-pills"><span>2D SURVIVAL</span><span>HORROR</span><span>UNITY</span></div>
+      </div>
+      <div class="hero-art" aria-label="Схематичный мрачный коридор">
+        <div class="art-grid"></div><div class="room room-back"></div><div class="room room-mid"></div><div class="room room-front"></div>
+        <div class="light-beam"></div><div class="art-door"><span></span></div><div class="art-shadow"></div>
+        <div class="art-label"><span class="live-dot"></span> SIGNAL FOUND <b>04:17 AM</b></div>
+        <div class="art-coordinate">51°30'26.4"N<br />00°07'39.1"W</div>
+        <div class="art-caption">НЕ ВСЕ ВЫХОДЫ<br />ВЕДУТ НАРУЖУ</div>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="Опросник проекта">
+      <div class="form-column">
+        <div class="form-intro">
+          <div><span class="section-kicker">ТВОЯ ИГРА · ТВОИ ПРАВИЛА</span><h2>Собираем основу</h2></div>
+          <p>Можно отвечать коротко, пропускать и возвращаться позже. Черновик сохраняется автоматически в этом браузере.</p>
+        </div>
+        <div class="section-tabs" role="tablist" aria-label="Разделы опросника">
+          <button class="section-tab active" data-jump="section-1" type="button"><span>01</span> Концепция</button>
+          <button class="section-tab" data-jump="section-2" type="button"><span>02</span> Выживание</button>
+          <button class="section-tab" data-jump="section-3" type="button"><span>03</span> Мир и стиль</button>
+          <button class="section-tab" data-jump="section-4" type="button"><span>04</span> Игровой опыт</button>
+        </div>
+
+        <form id="briefForm" autocomplete="off">
+          <section class="question-section" id="section-1" data-section="1">
+            <div class="section-heading"><span class="section-number">01</span><div><span class="section-kicker">ЗАДАЙ НАПРАВЛЕНИЕ</span><h3>Концепция</h3></div><span class="section-count">ВОПРОСЫ 01—05</span></div>
+            <article class="question-card" data-q="1"><div class="question-top"><span class="q-number">01</span><label for="q1">Как называется игра и что это за игра в одном предложении?</label><span class="known-tag">УЖЕ ИЗВЕСТНО</span></div><p class="q-hint">Короткий питч: кто ты, где оказался и чего пытаешься добиться.</p><textarea id="q1" data-question="Название и короткий питч" rows="2">Subsistence — 2D-игра на выживание, сочетающая напряжение Rust и тревожную атмосферу Backrooms.</textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 1" data-copy="q1">↗</button></article>
+            <article class="question-card" data-q="2"><div class="question-top"><span class="q-number">02</span><label for="q2">На каких устройствах и платформах хочешь выпустить игру?</label></div><p class="q-hint">Например: Windows PC сначала, потом Steam Deck или мобильные устройства.</p><textarea id="q2" data-question="Платформы" rows="2" placeholder="Например: ПК на Windows; сначала прототип, затем Steam…"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 2" data-copy="q2">↗</button></article>
+            <article class="question-card" data-q="3"><div class="question-top"><span class="q-number">03</span><label for="q3">Как выглядит 2D-игра: сбоку, сверху или под углом?</label><span class="known-tag">УЖЕ ИЗВЕСТНО</span></div><p class="q-hint">Это сильно влияет на исследование, бой и то, как строится уровень.</p><textarea id="q3" data-question="Вид и камера" rows="2">2D-вид сбоку, как на присланном референсе.</textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 3" data-copy="q3">↗</button></article>
+            <article class="question-card" data-q="4"><div class="question-top"><span class="q-number">04</span><label for="q4">Ты играешь один или вместе с другими? Нужен ли мультиплеер?</label></div><p class="q-hint">Можно начать с одиночного режима и добавить кооператив позже.</p><textarea id="q4" data-question="Одиночная игра / мультиплеер" rows="2" placeholder="Например: одиночная игра; кооператив на 2–4 игрока хотелось бы позже…"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 4" data-copy="q4">↗</button></article>
+            <article class="question-card" data-q="5"><div class="question-top"><span class="q-number">05</span><label for="q5">Кем является игрок и зачем он оказался в этом месте?</label></div><p class="q-hint">Предыстория может быть загадочной — достаточно одной сильной зацепки.</p><textarea id="q5" data-question="Роль игрока и завязка" rows="2" placeholder="Кто герой? Что привело его в опасное место? Что нужно выяснить?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 5" data-copy="q5">↗</button></article>
+          </section>
+
+          <section class="question-section" id="section-2" data-section="2">
+            <div class="section-heading"><span class="section-number">02</span><div><span class="section-kicker">ЧТОБЫ ДОЖИТЬ ДО УТРА</span><h3>Выживание</h3></div><span class="section-count">ВОПРОСЫ 06—10</span></div>
+            <article class="question-card" data-q="6"><div class="question-top"><span class="q-number">06</span><label for="q6">Какие ресурсы и показатели нужно контролировать?</label></div><p class="q-hint">Голод, жажда, здоровье, выносливость, температура, рассудок, свет…</p><textarea id="q6" data-question="Ресурсы и показатели выживания" rows="2" placeholder="Перечисли важные шкалы и ресурсы. Что из этого должно быть главным?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 6" data-copy="q6">↗</button></article>
+            <article class="question-card" data-q="7"><div class="question-top"><span class="q-number">07</span><label for="q7">Что игрок будет делать чаще всего?</label></div><p class="q-hint">Исследовать, собирать хлам, крафтить, строить укрытие, прятаться или сражаться?</p><textarea id="q7" data-question="Основной игровой цикл" rows="2" placeholder="Опиши повторяющийся цикл: вышел → нашёл → сделал → пережил…"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 7" data-copy="q7">↗</button></article>
+            <article class="question-card" data-q="8"><div class="question-top"><span class="q-number">08</span><label for="q8">Насколько важны крафт и строительство базы?</label></div><p class="q-hint">Например: простые баррикады или полноценное строительство, как в Rust.</p><textarea id="q8" data-question="Крафт и строительство" rows="2" placeholder="Какие предметы можно создавать? Можно ли укреплять и обустраивать базу?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 8" data-copy="q8">↗</button></article>
+            <article class="question-card" data-q="9"><div class="question-top"><span class="q-number">09</span><label for="q9">Как устроены опасность и бой?</label></div><p class="q-hint">Оружие, скрытность, ловушки, ограниченные патроны или лучше избегать врагов?</p><textarea id="q9" data-question="Бой и опасности" rows="2" placeholder="Опиши желаемый бой. Можно ли дать отпор или приходится спасаться?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 9" data-copy="q9">↗</button></article>
+            <article class="question-card" data-q="10"><div class="question-top"><span class="q-number">10</span><label for="q10">Что происходит, когда персонаж погибает?</label></div><p class="q-hint">Потеря вещей, точка возрождения, сохранение прогресса или перманентная смерть?</p><textarea id="q10" data-question="Смерть и сохранения" rows="2" placeholder="Что игрок теряет или сохраняет после смерти? Как часто сохраняется игра?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 10" data-copy="q10">↗</button></article>
+          </section>
+
+          <section class="question-section" id="section-3" data-section="3">
+            <div class="section-heading"><span class="section-number">03</span><div><span class="section-kicker">МЕСТО, КОТОРОЕ НЕ ОТПУСКАЕТ</span><h3>Мир и стиль</h3></div><span class="section-count">ВОПРОСЫ 11—15</span></div>
+            <article class="question-card" data-q="11"><div class="question-top"><span class="q-number">11</span><label for="q11">Где происходит действие игры?</label></div><p class="q-hint">Заброшенный комплекс, бесконечные офисные коридоры, лес и подземелья — или всё сразу?</p><textarea id="q11" data-question="Место действия" rows="2" placeholder="Какие локации и окружение ты представляешь?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 11" data-copy="q11">↗</button></article>
+            <article class="question-card" data-q="12"><div class="question-top"><span class="q-number">12</span><label for="q12">Какой визуальный стиль ближе всего?</label><span class="known-tag">РЕФЕРЕНС ПРИНЯТ</span></div><p class="q-hint">Учитываем стиль персонажей, объектов и окружения; задний фон с картинки не копируем.</p><textarea id="q12" data-question="Визуальный стиль" rows="2">Детализированный пиксель-арт в 2D-виде сбоку: выразительные персонажи и предметы с чёткими силуэтами, приглушённая постапокалиптическая палитра и фактурные спрайты. Присланная картинка — референс стиля; её задний фон не повторять.</textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 12" data-copy="q12">↗</button></article>
+            <article class="question-card" data-q="13"><div class="question-top"><span class="q-number">13</span><label for="q13">Какое ощущение должна вызывать игра?</label></div><p class="q-hint">Одиночество, постоянное напряжение, любопытство, внезапный ужас, уют в убежище?</p><textarea id="q13" data-question="Атмосфера и эмоции" rows="2" placeholder="Назови 2–4 главных ощущения. Когда игрок должен выдохнуть?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 13" data-copy="q13">↗</button></article>
+            <article class="question-card" data-q="14"><div class="question-top"><span class="q-number">14</span><label for="q14">Какие существа или противники обитают в мире?</label></div><p class="q-hint">Монстры, другие выжившие, странные явления — и можно ли понять их поведение?</p><textarea id="q14" data-question="Противники и существа" rows="2" placeholder="Как они выглядят, чего хотят и чем отличаются друг от друга?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 14" data-copy="q14">↗</button></article>
+            <article class="question-card" data-q="15"><div class="question-top"><span class="q-number">15</span><label for="q15">Есть ли у мира необычные правила или тайны?</label></div><p class="q-hint">Меняющиеся коридоры, зоны с разной физикой, загадочные сигналы, скрытые маршруты…</p><textarea id="q15" data-question="Тайны и правила мира" rows="2" placeholder="Какая странность отличает этот мир от обычного постапокалипсиса?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 15" data-copy="q15">↗</button></article>
+          </section>
+
+          <section class="question-section" id="section-4" data-section="4">
+            <div class="section-heading"><span class="section-number">04</span><div><span class="section-kicker">КАК ЭТО БУДЕТ ИГРАТЬСЯ</span><h3>Игровой опыт</h3></div><span class="section-count">ВОПРОСЫ 16—20</span></div>
+            <article class="question-card" data-q="16"><div class="question-top"><span class="q-number">16</span><label for="q16">Как игрок продвигается и становится сильнее?</label></div><p class="q-hint">Новые инструменты, рецепты, навыки, безопасные зоны, открытия сюжета?</p><textarea id="q16" data-question="Прогресс и развитие" rows="2" placeholder="Что открывается по мере игры? Как игрок понимает, что стал сильнее?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 16" data-copy="q16">↗</button></article>
+            <article class="question-card" data-q="17"><div class="question-top"><span class="q-number">17</span><label for="q17">Мир будет открытым, уровневым или процедурно генерируемым?</label></div><p class="q-hint">Можно смешать: например, вручную сделанные важные места и случайные переходы между ними.</p><textarea id="q17" data-question="Структура мира" rows="2" placeholder="Как устроены исследование, карта и повторные прохождения?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 17" data-copy="q17">↗</button></article>
+            <article class="question-card" data-q="18"><div class="question-top"><span class="q-number">18</span><label for="q18">Какими должны быть звук и музыка?</label></div><p class="q-hint">Редкие музыкальные темы, гул ламп, далёкие шаги, радио с помехами, резкая тишина?</p><textarea id="q18" data-question="Звук и музыка" rows="2" placeholder="Какие звуки игрок слышит постоянно, а какие должны пугать?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 18" data-copy="q18">↗</button></article>
+            <article class="question-card" data-q="19"><div class="question-top"><span class="q-number">19</span><label for="q19">Насколько сложное управление и интерфейс ты хочешь?</label></div><p class="q-hint">Инвентарь-сетка как в survival-играх, быстрые слоты, карта, подсказки, поддержка геймпада?</p><textarea id="q19" data-question="Управление и интерфейс" rows="2" placeholder="Клавиатура/геймпад? Что должно всегда быть на экране?"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 19" data-copy="q19">↗</button></article>
+            <article class="question-card" data-q="20"><div class="question-top"><span class="q-number">20</span><label for="q20">Что обязательно должно войти в первую играбельную версию?</label></div><p class="q-hint">Выбери самый маленький, но уже интересный прототип. И что важнее всего сделать идеально?</p><textarea id="q20" data-question="Первая версия / приоритет" rows="2" placeholder="Например: одна локация, сбор ресурсов, фонарик и один преследующий враг…"></textarea><button class="copy-one" type="button" aria-label="Копировать ответ на вопрос 20" data-copy="q20">↗</button></article>
+          </section>
+          <div class="form-end"><span class="live-dot"></span><span>ЭТО ТОЛЬКО ЧЕРНОВИК. МОЖНО МЕНЯТЬ В ЛЮБОЙ МОМЕНТ.</span></div>
+        </form>
+      </div>
+
+      <aside class="side-column">
+        <div class="progress-card">
+          <div class="card-label"><span>ТВОЙ БРИФ</span><span class="pulse"></span></div>
+          <div class="progress-number"><span id="answeredCount">03</span><small> / 20</small></div>
+          <p>ответов заполнено</p>
+          <div class="progress-track"><span id="progressFill"></span></div>
+          <div class="progress-foot"><span>ПРОГРЕСС</span><strong id="progressPercent">15%</strong></div>
+        </div>
+        <div class="action-card">
+          <span class="card-label">ЗАБЕРИ СВОИ ОТВЕТЫ</span>
+          <h3>Ничего не потеряется.</h3>
+          <p>Ответы сохраняются на этом устройстве. Скопируй готовый бриф или скачай его файлом.</p>
+          <button class="primary-action" id="copyAll" type="button"><span>Скопировать бриф</span><b>↗</b></button>
+          <button class="secondary-action" id="downloadTxt" type="button"><span>Скачать .txt</span><b>↓</b></button>
+          <button class="text-action" id="downloadJson" type="button">Скачать резервную копию .json</button>
+          <label class="import-action" for="importJson">Загрузить сохранённую копию <input id="importJson" type="file" accept="application/json,.json" /></label>
+          <div class="copy-feedback" id="feedback" aria-live="polite"></div>
+        </div>
+        <div class="note-card"><span class="note-icon">✳</span><div><strong>Про графику и модели</strong><p>Для 2D-игры начнём с персонажей, тайлов и эффектов. Blender пригодится для 3D-референсов; Krita или Aseprite — для рисования 2D-спрайтов. Выберем инструменты после твоих ответов.</p></div></div>
+        <div class="note-card reference-note"><span class="note-icon">↗</span><div><strong>Референс принят</strong><p>Берём за ориентир 2D-пиксель-арт, боковой ракурс и детализацию персонажей/объектов. Задний фон с изображения не копируем.</p></div></div>
+        <button class="reset-action" id="resetForm" type="button">Очистить ответы</button>
+      </aside>
+    </section>
+    <footer><span>SUBSISTENCE <i>—</i> CONCEPT INTAKE</span><span>MADE FOR THE PLACES BETWEEN PLACES</span><span>UNITY 2022.3.62f2</span></footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
