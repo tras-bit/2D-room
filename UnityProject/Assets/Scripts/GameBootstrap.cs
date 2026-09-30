@@ -2,222 +2,75 @@ using UnityEngine;
 
 namespace Subsistence
 {
-    /// <summary>Builds the first playable field test on a fresh empty Unity scene.</summary>
+    /// <summary>Bootstraps the 2.5D survival slice when the current Unity scene is empty.</summary>
     public sealed class GameBootstrap : MonoBehaviour
     {
-        static Sprite block;
         static Transform world;
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void StartFieldTest()
-        {
-            if (FindObjectOfType<GameBootstrap>() != null) return;
-            var root = new GameObject("SUBSISTENCE · Field Test 001");
-            root.AddComponent<GameBootstrap>();
-        }
+        static void StartFieldTest(){if(FindObjectOfType<GameBootstrap>()==null){var root=new GameObject("SUBSISTENCE · Backrooms Field Test");root.AddComponent<GameBootstrap>();}}
 
         void Awake()
         {
-            Application.targetFrameRate = 60;
-            block = PixelArtFactory.Block(Color.white);
-            world = new GameObject("World").transform;
-            world.SetParent(transform);
-            CreateCamera();
-            CreateEnvironment();
-            CreatePlayer();
-            CreatePickups();
-            CreateWatcher();
-            CreateExit();
-            gameObject.AddComponent<RunState>();
-            gameObject.AddComponent<AudioDirector>();
-            gameObject.AddComponent<GameHUD>();
+            Application.targetFrameRate=60;RuntimeArtFactory.Initialize();world=new GameObject("World · Backrooms sectors").transform;world.SetParent(transform,false);
+            CreateLighting();CreateCamera();RoomBuilder3D.Build(world);CreateWalkableCollider();CreatePlayer();CreateContainers();CreateWorkbenches();CreateWatcher();CreateExit();
+            gameObject.AddComponent<RunState>();gameObject.AddComponent<AudioDirector>();gameObject.AddComponent<GameHUD>();
         }
-
+        void CreateLighting()
+        {
+            RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight=new Color(.37f,.34f,.26f);RenderSettings.ambientIntensity=.80f;
+            RenderSettings.fog=true;RenderSettings.fogMode=FogMode.Exponential;RenderSettings.fogColor=new Color(.35f,.32f,.23f);RenderSettings.fogDensity=.0042f;
+            var go=new GameObject("Warm overhead bounce light");var light=go.AddComponent<Light>();light.type=LightType.Directional;light.color=new Color(1f,.84f,.58f);light.intensity=.72f;light.shadows=LightShadows.Soft;light.shadowStrength=.32f;go.transform.rotation=Quaternion.Euler(48f,-28f,0);
+        }
         void CreateCamera()
         {
-            Camera cam = Camera.main;
-            if (cam == null)
-            {
-                var go = new GameObject("Main Camera");
-                cam = go.AddComponent<Camera>();
-                go.tag = "MainCamera";
-            }
-            if (FindObjectOfType<AudioListener>() == null) cam.gameObject.AddComponent<AudioListener>();
-            cam.orthographic = true;
-            cam.orthographicSize = 4.45f;
-            cam.backgroundColor = new Color(.34f, .39f, .33f);
-            cam.transform.position = new Vector3(-25f, 2.6f, -10f);
-            cam.gameObject.AddComponent<CameraFollow>();
+            Camera cam=Camera.main;
+            if(cam==null){var go=new GameObject("Main Camera");cam=go.AddComponent<Camera>();go.tag="MainCamera";}
+            cam.orthographic=false;cam.fieldOfView=42f;cam.nearClipPlane=.1f;cam.farClipPlane=180f;cam.backgroundColor=new Color(.22f,.21f,.16f);cam.clearFlags=CameraClearFlags.SolidColor;
+            cam.transform.position=new Vector3(-17f,5.6f,-15f);cam.transform.LookAt(new Vector3(-17f,2.3f,4f));
+            if(cam.GetComponent<CameraFollow>()==null)cam.gameObject.AddComponent<CameraFollow>();
+            if(FindObjectOfType<AudioListener>()==null)cam.gameObject.AddComponent<AudioListener>();
         }
-
-        void CreateEnvironment()
+        void CreateWalkableCollider()
         {
-            // Distorted service concourse and a distant, fog-broken industrial skyline.
-            BlockAt("Distant wall", 0, 3.2f, 125, 6f, new Color(.42f,.48f,.41f), -30);
-            for (int i = 0; i < 20; i++)
-            {
-                float x = -42f + i * 7.5f;
-                float h = 1.8f + (i % 4) * .47f;
-                BlockAt("Far building", x, 1.3f + h * .5f, 5.2f, h, i % 3 == 0 ? new Color(.37f,.44f,.38f) : new Color(.43f,.48f,.39f), -25);
-                for (int w = 0; w < 3; w++) BlockAt("Distant window", x - 1.55f + w * 1.45f, 1.2f + h * .55f, .38f, .48f, new Color(.30f,.38f,.34f), -24);
-            }
-            // Repeating overhead ribs vanish toward the mist; deliberately not the reference's open village backdrop.
-            for (int i = 0; i < 24; i++)
-            {
-                float x = -52 + i * 6.2f;
-                BlockAt("Ceiling rib", x, 7.1f, .14f, 5.6f, new Color(.31f,.37f,.33f), -12);
-                BlockAt("Ceiling crossbar", x + 1.55f, 9.85f, 3.3f, .12f, new Color(.43f,.46f,.36f), -12);
-            }
-            BlockAt("Hanging sodium lamp", -11f, 8.45f, 1.45f, .11f, new Color(.77f,.70f,.45f), -10);
-            BlockAt("Hanging sodium lamp", 17f, 8.45f, 1.45f, .11f, new Color(.77f,.70f,.45f), -10);
-
-            // Service buildings, barriers, old pipework, crates and overgrowth.
-            PlaceSprite("Maintenance shelter", -21f, 0f, PixelArtFactory.Shelter(), -2);
-            PlaceSprite("Sealed bulkhead", 6f, 0f, PixelArtFactory.Bulkhead(), -2);
-            PlaceSprite("Maintenance shelter", 39f, 0f, PixelArtFactory.Shelter(), -2);
-            PlaceSprite("Weathered crate", -14.5f, 0f, PixelArtFactory.Crate(), 1, .72f);
-            PlaceSprite("Weathered crate", 4.5f, 0f, PixelArtFactory.Crate(), 1, .72f);
-            PlaceSprite("Weathered crate", 26f, 0f, PixelArtFactory.Crate(), 1, .72f);
-            PlaceSprite("Weathered crate", 54f, 0f, PixelArtFactory.Crate(), 1, .72f);
-
-            for (int i = 0; i < 16; i++)
-            {
-                float x = -32 + i * 7.1f;
-                float height = .25f + (i % 4) * .12f;
-                BlockAt("Broken fence post", x, .93f, .09f, 1.85f, new Color(.31f,.37f,.31f), -1);
-                BlockAt("Fence cap", x, 1.88f, .22f, .07f, new Color(.56f,.55f,.40f), -1);
-                if (i < 15) BlockAt("Fence wire", x + 3.55f, 1.30f, 7.1f, .045f, new Color(.43f,.48f,.39f), -1);
-                BlockAt("Platform weeds", x + .7f, height * .5f, .09f, height, i % 2 == 0 ? new Color(.40f,.48f,.32f) : new Color(.57f,.54f,.34f), 0);
-            }
-            for(int i=0;i<8;i++)
-            {
-                float x=-29+i*13.5f;
-                BlockAt("Drain pipe",x,1.03f,8.4f,.16f,new Color(.39f,.43f,.35f),-3);
-                BlockAt("Pipe bracket",x+.3f,.80f,.11f,.55f,new Color(.48f,.49f,.37f),-2);
-            }
-
-            var ground = new GameObject("Walkable · cracked service floor");
-            ground.transform.SetParent(world);
-            ground.transform.position = new Vector3(15f, -.34f, 0f);
-            var groundRenderer = ground.AddComponent<SpriteRenderer>();
-            groundRenderer.sprite = block;
-            groundRenderer.color = new Color(.17f,.20f,.17f);
-            groundRenderer.sortingOrder = 2;
-            ground.transform.localScale = new Vector3(125f,.7f,1f);
-            var collider = ground.AddComponent<BoxCollider2D>();
-            collider.size = new Vector2(1f,1f);
-
-            for (int i = 0; i < 50; i++)
-            {
-                float x = -43f + i * 2.8f;
-                BlockAt("Cracked floor mark",x,-.14f,.35f+(i%4)*.18f,.025f,i%3==0?new Color(.36f,.39f,.31f):new Color(.23f,.28f,.23f),3);
-                if (i % 2 == 0) BlockAt("Dead grass",x+.35f,.02f,.04f,.26f,new Color(.45f,.48f,.32f),3);
-            }
-            BlockAt("Exit arch left", 72f, 2.05f, .28f, 4.1f, new Color(.35f,.41f,.35f), 4);
-            BlockAt("Exit arch right", 76f, 2.05f, .28f, 4.1f, new Color(.35f,.41f,.35f), 4);
-            BlockAt("Exit arch lintel", 74f, 4.1f, 4.3f, .26f, new Color(.50f,.53f,.40f), 4);
-            BlockAt("Exit glow", 74f, 1.9f, 2.2f, 3.2f, new Color(.25f,.38f,.31f,.8f), 3);
-            BlockAt("Exit indicator", 75.25f, 2.45f, .12f, .45f, new Color(.75f,.81f,.47f), 5);
+            var go=new GameObject("Continuous side-view collision plane");go.transform.SetParent(world,false);go.transform.position=new Vector3(36f,-.30f,0f);
+            var floor=go.AddComponent<BoxCollider2D>();floor.size=new Vector2(128f,.60f);
         }
-
         void CreatePlayer()
         {
-            var go = new GameObject("Survivor · Player");
-            go.transform.SetParent(world);
-            go.transform.position = new Vector3(-25f, 0f, 0f);
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = PixelArtFactory.Survivor(0);
-            sr.sortingOrder = 20;
-            var animation = go.AddComponent<PixelFrameAnimator>();
-            animation.AddClip("idle", new[] { PixelArtFactory.Survivor(0), PixelArtFactory.Survivor(2) }, 2.2f);
-            animation.AddClip("walk", new[] { PixelArtFactory.Survivor(0), PixelArtFactory.Survivor(1), PixelArtFactory.Survivor(2), PixelArtFactory.Survivor(3) }, 9f);
-            animation.AddClip("jump", new[] { PixelArtFactory.Survivor(1), PixelArtFactory.Survivor(2) }, 3f, false);
-            animation.AddClip("attack", new[] { PixelArtFactory.Survivor(1), PixelArtFactory.Survivor(3), PixelArtFactory.Survivor(0) }, 13f, false);
-            animation.AddClip("hurt", new[] { PixelArtFactory.Survivor(3), PixelArtFactory.Survivor(1) }, 8f, false);
-            var body = go.AddComponent<Rigidbody2D>();
-            body.gravityScale = 3.2f;
-            body.freezeRotation = true;
-            body.interpolation = RigidbodyInterpolation2D.Interpolate;
-            body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-            var collider = go.AddComponent<BoxCollider2D>();
-            collider.size = new Vector2(.62f, 1.35f);
-            collider.offset = new Vector2(0f,.67f);
-            go.AddComponent<PlayerController>();
-            var glow = new GameObject("Flashlight glow");
-            glow.transform.SetParent(go.transform);
-            glow.transform.localPosition = new Vector3(.32f,.66f,.1f);
-            var lightSprite = glow.AddComponent<SpriteRenderer>();
-            lightSprite.sprite = PixelArtFactory.FlashlightBeam();
-            lightSprite.color = new Color(1f,1f,1f,.90f);
-            lightSprite.sortingOrder = 19;
-            go.GetComponent<PlayerController>().SetFlashlightVisual(lightSprite, glow.transform);
+            var go=new GameObject("Survivor · Player 2.5D");go.transform.SetParent(world,false);go.transform.position=new Vector3(-19f,0,0);
+            var body=go.AddComponent<Rigidbody2D>();body.gravityScale=3.25f;body.freezeRotation=true;body.interpolation=RigidbodyInterpolation2D.Interpolate;body.collisionDetectionMode=CollisionDetectionMode2D.Continuous;
+            var collider=go.AddComponent<BoxCollider2D>();collider.size=new Vector2(.60f,1.5f);collider.offset=new Vector2(0,.75f);
+            go.AddComponent<CharacterModel3D>();go.AddComponent<InventorySystem>();go.AddComponent<PlayerController>();
         }
-
-        void CreatePickups()
+        void CreateContainers()
         {
-            SpawnPickup(-19f, SupplyPickup.Kind.Scrap);
-            SpawnPickup(-11f, SupplyPickup.Kind.Water);
-            SpawnPickup(-2f, SupplyPickup.Kind.Cloth);
-            SpawnPickup(11f, SupplyPickup.Kind.Food);
-            SpawnPickup(20f, SupplyPickup.Kind.Scrap);
-            SpawnPickup(31f, SupplyPickup.Kind.Cloth);
-            SpawnPickup(44f, SupplyPickup.Kind.Water);
-            SpawnPickup(55f, SupplyPickup.Kind.Scrap);
+            MakeContainer(-8f,1,"FIELD SUPPLY CRATE");MakeContainer(1.5f,1,"FIELD SUPPLY CRATE");
+            MakeContainer(19f,2,"OFFICE SECURITY CRATE");MakeContainer(43f,1,"FIELD SUPPLY CRATE");
+            MakeContainer(56f,2,"UTILITY LOCKER");MakeContainer(76f,3,"SEALED ARMOURY");MakeContainer(89f,3,"MAINTENANCE CACHE");
         }
-
-        void SpawnPickup(float x, SupplyPickup.Kind kind)
+        void MakeContainer(float x,int tier,string name)
+        {var go=new GameObject(name+" · TIER "+tier);go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);go.AddComponent<LootContainer>().Initialize(tier,name);}
+        void CreateWorkbenches()
+        {MakeBench(14f,1,"FIELD BENCH");MakeBench(53f,2,"ELECTRONICS BENCH");MakeBench(82f,3,"ARMOURY BENCH");}
+        void MakeBench(float x,int tier,string name)
+        {var go=new GameObject(name);go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);go.AddComponent<WorkbenchStation>().Initialize(tier,name);}
+        void CreateWatcher(){CreateWatcherAt(29f,"WATCHER · OFFICE WING");CreateWatcherAt(83f,"WATCHER · MAINTENANCE");}
+        void CreateWatcherAt(float x,string name)
         {
-            var go = new GameObject("Supply · " + kind);
-            go.transform.SetParent(world);
-            go.transform.position = new Vector3(x,.08f,0f);
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = PixelArtFactory.Supply(kind);
-            sr.sortingOrder = 12;
-            var collider = go.AddComponent<BoxCollider2D>();
-            collider.isTrigger = true;
-            collider.size = new Vector2(.8f,.8f);
-            go.AddComponent<SupplyPickup>().Initialize(kind);
+            var go=new GameObject(name);go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);
+            var body=go.AddComponent<Rigidbody2D>();body.bodyType=RigidbodyType2D.Kinematic;body.freezeRotation=true;body.interpolation=RigidbodyInterpolation2D.Interpolate;
+            var collider=go.AddComponent<BoxCollider2D>();collider.size=new Vector2(.66f,1.55f);collider.offset=new Vector2(0,.77f);
+            go.AddComponent<CharacterModel3D>();go.AddComponent<WatcherAI>();
         }
-
-        void CreateWatcher()
-        {
-            var go = new GameObject("Watcher · hostile");
-            go.transform.SetParent(world);
-            go.transform.position = new Vector3(15f,0f,0f);
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = PixelArtFactory.Watcher(0);
-            sr.sortingOrder = 18;
-            var animation = go.AddComponent<PixelFrameAnimator>();
-            animation.AddClip("patrol", new[] { PixelArtFactory.Watcher(0), PixelArtFactory.Watcher(1) }, 3f);
-            animation.AddClip("stunned", new[] { PixelArtFactory.Watcher(1), PixelArtFactory.Watcher(0) }, 6f);
-            var collider = go.AddComponent<BoxCollider2D>();
-            collider.size = new Vector2(.82f,1.38f);
-            collider.offset = new Vector2(0f,.69f);
-            var body = go.AddComponent<Rigidbody2D>();
-            body.bodyType = RigidbodyType2D.Kinematic;
-            body.freezeRotation = true;
-            go.AddComponent<WatcherAI>();
-        }
-
         void CreateExit()
         {
-            BlockAt("Exit door shadow",74f,1.72f,1.85f,3.4f,new Color(.11f,.17f,.14f),5);
-            for(int i=0;i<5;i++)BlockAt("Door ribs",73.35f+i*.33f,1.7f,.045f,3.1f,new Color(.34f,.44f,.34f),6);
-            BlockAt("Exit lamp",74f,3.62f,.48f,.08f,new Color(.79f,.82f,.50f),7);
-        }
-
-        void PlaceSprite(string name,float x,float y,Sprite sprite,int order,float scale=1f)
-        {
-            var go=new GameObject(name);go.transform.SetParent(world);go.transform.position=new Vector3(x,y,0);go.transform.localScale=Vector3.one*scale;
-            var sr=go.AddComponent<SpriteRenderer>();sr.sprite=sprite;sr.sortingOrder=order;
-        }
-
-        void BlockAt(string name,float x,float y,float width,float height,Color color,int order)
-        {
-            var go=new GameObject(name);go.transform.SetParent(world);go.transform.position=new Vector3(x,y,0);go.transform.localScale=new Vector3(width,height,1);
-            var sr=go.AddComponent<SpriteRenderer>();sr.sprite=block;sr.color=color;sr.sortingOrder=order;
-            string key=name.ToLowerInvariant();
-            if(key.Contains("lamp")||key.Contains("indicator"))go.AddComponent<LampFlicker>();
+            float x=94.5f;
+            RuntimeArtFactory.Cube(world,"Final service hatch",new Vector3(x,2.45f,8.5f),new Vector3(3.8f,4.9f,.45f),RuntimeArtFactory.Metal);
+            RuntimeArtFactory.Cube(world,"Hatch dark interior",new Vector3(x,2.4f,8.20f),new Vector3(2.55f,4.1f,.08f),RuntimeArtFactory.Rubber);
+            for(int i=-2;i<=2;i++)RuntimeArtFactory.Cube(world,"Hatch ribs",new Vector3(x+i*.48f,2.4f,8.12f),new Vector3(.055f,3.8f,.04f),RuntimeArtFactory.Metal);
+            RuntimeArtFactory.Cube(world,"Exit light",new Vector3(x,5.1f,7.9f),new Vector3(.74f,.12f,.10f),RuntimeArtFactory.Fluorescent);
+            RuntimeArtFactory.PointLight(world,"Exit status",new Vector3(x,4.7f,6.8f),new Color(.60f,.83f,.51f),.85f,8f);
         }
     }
 }

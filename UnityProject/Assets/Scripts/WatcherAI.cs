@@ -2,83 +2,32 @@ using UnityEngine;
 
 namespace Subsistence
 {
-    [RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer))]
+    [RequireComponent(typeof(Rigidbody2D),typeof(BoxCollider2D))]
     public sealed class WatcherAI : MonoBehaviour
     {
-        public float NoticeRadius = 8f;
-        public float ChaseSpeed = 2.75f;
-        Rigidbody2D body;
-        SpriteRenderer spriteRenderer;
-        PixelFrameAnimator spriteAnimator;
-        Transform target;
-        float stunTimer;
-        float attackTimer;
-        float patrolClock;
-        float originX;
-        bool isGone;
-
+        public float NoticeRadius=9.5f,ChaseSpeed=2.35f;
+        Rigidbody2D body;CharacterModel3D model;Transform target;float stunTimer,attackTimer,patrolClock,originX;bool gone;
         void Awake()
         {
-            body = GetComponent<Rigidbody2D>();
-            spriteRenderer = GetComponent<SpriteRenderer>();
-            spriteAnimator = GetComponent<PixelFrameAnimator>();
-            originX = transform.position.x;
+            body=GetComponent<Rigidbody2D>();model=GetComponent<CharacterModel3D>();if(model==null)model=gameObject.AddComponent<CharacterModel3D>();originX=transform.position.x;
+            var worn=new ItemStack[InventorySystem.GearSize];worn[(int)GearSlot.Chest]=new ItemStack(ItemId.HazmatSuit,1);worn[(int)GearSlot.Back]=new ItemStack(ItemId.Backpack,1);model.SetGear(worn);model.SetHostileAppearance();
         }
-
-        void Start()
-        {
-            var player = FindObjectOfType<PlayerController>();
-            if (player != null) target = player.transform;
-        }
-
+        void Start(){var player=FindObjectOfType<PlayerController>();if(player!=null)target=player.transform;}
         void FixedUpdate()
         {
-            if (isGone || target == null || RunState.Instance == null || !GameHUD.IsPlaying || RunState.Instance.IsDead || RunState.Instance.HasEscaped) return;
-            if (stunTimer > 0)
-            {
-                stunTimer -= Time.fixedDeltaTime;
-                body.MovePosition(body.position);
-                spriteRenderer.color = new Color(.68f,.78f,.59f);
-                spriteAnimator?.Play("stunned");
-                return;
-            }
-            spriteRenderer.color = Color.white;
-            spriteAnimator?.Play("patrol");
-            float dx = target.position.x - transform.position.x;
-            float distance = Mathf.Abs(dx);
-            float speed;
-            if (distance < NoticeRadius) speed = Mathf.Sign(dx) * ChaseSpeed;
-            else
-            {
-                patrolClock += Time.fixedDeltaTime;
-                speed = Mathf.Sin(patrolClock * .85f) * .48f;
-                if (Mathf.Abs(transform.position.x-originX)>2.2f) speed=-Mathf.Sign(transform.position.x-originX)*.45f;
-            }
-            body.MovePosition(body.position + Vector2.right * speed * Time.fixedDeltaTime);
-            if (speed != 0) spriteRenderer.flipX = speed < 0;
-            if (distance < 1.22f && attackTimer <= 0f)
-            {
-                var player = target.GetComponent<PlayerController>();
-                if (player != null) player.ReceiveHit(13f);
-                attackTimer = 1.05f;
-            }
-            attackTimer -= Time.fixedDeltaTime;
+            if(gone||target==null||RunState.Instance==null||!GameHUD.IsPlaying||RunState.Instance.IsDead||RunState.Instance.HasEscaped)return;
+            if(stunTimer>0){stunTimer-=Time.fixedDeltaTime;body.velocity=Vector2.zero;model.SetMotion(0,true,false,transform.position.x<target.position.x?1:-1,true);return;}
+            float dx=target.position.x-transform.position.x,distance=Mathf.Abs(dx),speed;
+            if(distance<NoticeRadius)speed=Mathf.Sign(dx)*ChaseSpeed;
+            else{patrolClock+=Time.fixedDeltaTime;speed=Mathf.Sin(patrolClock*.7f)*.40f;if(Mathf.Abs(transform.position.x-originX)>2.8f)speed=-Mathf.Sign(transform.position.x-originX)*.45f;}
+            body.MovePosition(body.position+Vector2.right*speed*Time.fixedDeltaTime);
+            model.SetMotion(Mathf.Abs(speed)/ChaseSpeed,true,false,speed>=0?1:-1,true);
+            if(distance<1.05f&&attackTimer<=0)
+            {var player=target.GetComponent<PlayerController>();if(player!=null)player.ReceiveHit(15f);attackTimer=1.15f;}
+            attackTimer-=Time.fixedDeltaTime;
         }
-
-        public void ResetForNewRun()
-        {
-            isGone=false;stunTimer=0;attackTimer=0;patrolClock=0;
-            body.position=new Vector2(originX,0f);spriteRenderer.color=Color.white;
-            spriteAnimator?.Play("patrol",true);
-        }
-
+        public void ResetForNewRun(){gone=false;stunTimer=0;attackTimer=0;patrolClock=0;body.position=new Vector2(originX,0);}
         public void Stun(float seconds)
-        {
-            if (isGone) return;
-            stunTimer = Mathf.Max(stunTimer, seconds);
-            spriteAnimator?.Play("stunned",true);
-            AudioDirector.Instance?.Play("stun",.85f);
-            RunState.Instance?.Notify("Ударил его — беги, пока оно оглушено.");
-        }
+        {if(gone)return;stunTimer=Mathf.Max(stunTimer,seconds);AudioDirector.Instance?.Play("stun",.85f);RunState.Instance?.Notify("Сталкер оглушён — беги!",1.4f);}
     }
 }

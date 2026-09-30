@@ -8,6 +8,8 @@ namespace Subsistence
     {
         public static AudioDirector Instance { get; private set; }
         public float MasterVolume { get; private set; } = .72f;
+        public float AmbienceVolume { get; private set; } = .30f;
+        public float MusicVolume { get; private set; } = .23f;
         AudioSource ambience;
         AudioSource music;
         AudioSource effects;
@@ -18,6 +20,8 @@ namespace Subsistence
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             MasterVolume=PlayerPrefs.GetFloat("Subsistence.MasterVolume",.72f);
+            AmbienceVolume=PlayerPrefs.GetFloat("Subsistence.AmbienceVolume",.30f);
+            MusicVolume=PlayerPrefs.GetFloat("Subsistence.MusicVolume",.23f);
             AudioListener.volume=MasterVolume;
             DontDestroyOnLoad(gameObject);
             Load("ambience", "ambience_service_tunnel");
@@ -34,7 +38,7 @@ namespace Subsistence
             ambience = gameObject.AddComponent<AudioSource>();
             ambience.clip = clips.TryGetValue("ambience", out var bed) ? bed : null;
             ambience.loop = true;
-            ambience.volume = .30f;
+            ambience.volume = AmbienceVolume;
             ambience.spatialBlend = 0f;
             ambience.playOnAwake = false;
             ambience.ignoreListenerPause = true;
@@ -42,7 +46,7 @@ namespace Subsistence
 
             music=gameObject.AddComponent<AudioSource>();
             music.clip=clips.TryGetValue("music",out var score)?score:null;
-            music.loop=true;music.volume=.23f;music.spatialBlend=0f;music.playOnAwake=false;music.ignoreListenerPause=true;
+            music.loop=true;music.volume=MusicVolume;music.spatialBlend=0f;music.playOnAwake=false;music.ignoreListenerPause=true;
             if(music.clip!=null)music.Play();
 
             effects = gameObject.AddComponent<AudioSource>();
@@ -65,12 +69,19 @@ namespace Subsistence
 
         public void SetMasterVolume(float value)
         {
-            MasterVolume = Mathf.Clamp01(value);
-            AudioListener.volume = MasterVolume;
-            PlayerPrefs.SetFloat("Subsistence.MasterVolume",MasterVolume);
-            PlayerPrefs.Save();
+            MasterVolume=Mathf.Clamp01(value);AudioListener.volume=MasterVolume;
+            PlayerPrefs.SetFloat("Subsistence.MasterVolume",MasterVolume);PlayerPrefs.Save();
         }
-
+        public void SetAmbienceVolume(float value)
+        {
+            AmbienceVolume=Mathf.Clamp01(value);if(ambience!=null)ambience.volume=AmbienceVolume;
+            PlayerPrefs.SetFloat("Subsistence.AmbienceVolume",AmbienceVolume);PlayerPrefs.Save();
+        }
+        public void SetMusicVolume(float value)
+        {
+            MusicVolume=Mathf.Clamp01(value);if(music!=null)music.volume=MusicVolume;
+            PlayerPrefs.SetFloat("Subsistence.MusicVolume",MusicVolume);PlayerPrefs.Save();
+        }
         void OnDestroy(){if(Instance==this)Instance=null;}
     }
 }
