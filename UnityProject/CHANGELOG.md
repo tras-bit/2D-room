@@ -1,17 +1,17 @@
-# Changelog
+# История изменений
 
-## alpha-1.0.0 — 2026-09-30
+## Альфа 1.0.0 — 30 сентября 2026
 
-- First Unity-only field-test slice for the requested 2D pixel-art survival horror.
-- Added runtime-generated service-concourse level, sprite art, sprite-frame clips, player movement and jump.
-- Added pickup resources, hunger/thirst/health, watcher patrol/chase/hit/stun, bandages, objective and powered exit.
-- Added title menu, controls, audio/fullscreen settings, pause, victory/defeat and restart flow.
-- Added original generated theme, ambience and one-shot WAV palette.
-- Pinned the Unity editor project to 2022.3.62f2 and created an Editor bootstrap for a launch scene/build-settings entry.
-- Removed the playable browser-game prototype. Kept only the separately requested 20-question brief website.
+- Первый игровой срез 2D survival-хоррора на Unity в пиксель-арт стиле.
+- Добавлена процедурно создаваемая сцена технического коридора, спрайты и покадровая анимация игрока.
+- Добавлены движение, прыжок, сбор ресурсов, голод, жажда, здоровье, преследователь, удар, перевязка и выход.
+- Добавлены главное меню, управление, настройки громкости/полноэкранного режима, пауза, победа, поражение и повторный запуск.
+- Добавлены оригинальная музыкальная тема, эмбиент и звуковые эффекты WAV.
+- Версия Unity зафиксирована на 2022.3.62f2; Editor-скрипт создаёт сцену запуска и добавляет её в список сборки.
+- Браузерная демоверсия игры удалена; сайт из 20 вопросов оставлен отдельно.
 
-### Known limitations for this alpha
+### Ограничения альфы
 
-- Unity Editor is not installed in the coding environment, so Unity import, compilation, and a native player build could not be run here.
-- Art is procedural placeholder pixel art that establishes the submitted style and animation pipeline; hand-polished sprite sheets, more biomes/enemies, saves, multiplayer, and final URP lighting remain future production work.
-- The release asset is a Unity project source archive, not a Windows executable.
+- Unity Editor отсутствует в среде разработки, поэтому импорт, компиляцию и сборку исполняемого файла здесь проверить не удалось.
+- Спрайты процедурные и задают направление присланного референса; детально отрисованные спрайт-листы, новые биомы/враги, сохранения, мультиплеер и финальный свет — следующие этапы.
+- В релизе находится исходный проект Unity, а не готовый `.exe`.
