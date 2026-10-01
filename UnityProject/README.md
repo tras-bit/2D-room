@@ -1,4 +1,4 @@
-# SUBSISTENCE — Альфа 1.2.0
+# SUBSISTENCE — Альфа 1.2.1
 
 **Целевая версия Unity: 2022.3.62f2.** Это Unity-проект, не браузерная игра. Игровой мир построен в чистом боковом 2D-виде: ортографическая камера, 2D-физика и пиксельные спрайты окружения и моделей. HUD вдохновлён Rust: шесть слотов пояса, полосы состояния и компас. Онлайн-серверов нет; сектора запускаются локально.
 
@@ -49,7 +49,8 @@
 - `Assets/Resources/PixelArt/individual_models.png` — отдельный атлас выжившего, наблюдателя, двери и предметов; он собран в проект `ArtSource/individual_models.piskel` и используется игровыми моделями.
 - `Assets/Scripts/CameraFollow2D.cs`, `PixelFrameAnimator.cs` — ортографическая камера и спрайтовая анимация.
 - `Assets/Scripts/InventorySystem.cs`, `GameHUD.cs` — 30 ячеек рюкзака, пояс из шести ячеек, чертежи, крафт и Rust-подобный HUD.
-- `Assets/Resources/Audio/` — музыка и звуковые эффекты. Старые файлы изображений в `Assets/Resources/Art/` оставлены в проекте, но текущий пиксельный мир их не загружает.
+- `Assets/Resources/Art/menu_backrooms.png` и `menu_maintenance_backrooms.png` — полноэкранные атмосферные фоны для главного меню/прочих экранов и настроек/выбора сектора. Остальные старые изображения в `Assets/Resources/Art/` мир не загружает.
+- `Assets/Resources/Audio/` — музыка и звуковые эффекты.
 - `Assets/Editor/FieldTestProjectSetup.cs` — создание стартовой сцены и установка версии приложения при первом открытии.
 - `Tools/generate_pixel_assets.py` — подготовка отдельного арт-листа и Piskel-проекта; `Tools/piskel_preview_server.py` — локальный просмотр Piskel-проекта, если собран редактор в `.tools/Piskel/`.
 - `RESEARCH.md` — технические решения и ссылки на документацию Unity.

@@ -12,10 +12,11 @@ namespace Subsistence
         public static bool MenuBackdropActive{get;private set;}=true;
         GUIStyle tiny,small,body,heading,title,mono,lightButton,darkButton,slotStyle;
         Texture2D lightTex,lightHover,darkTex,darkHover,slotTex,slotHover,selectedTex;
-        readonly Color ink=new Color(.91f,.91f,.84f),lime=new Color(.82f,.90f,.58f),muted=new Color(.62f,.67f,.59f),gold=new Color(.78f,.66f,.40f),copper=new Color(.77f,.36f,.18f);
+        Font uiFont;
+        readonly Color ink=new Color(.94f,.93f,.86f),lime=new Color(.82f,.90f,.58f),muted=new Color(.72f,.72f,.64f),gold=new Color(.82f,.69f,.43f),copper=new Color(.77f,.36f,.18f);
         float uiScale,uiScaleSetting=.94f,brightnessSetting=.5f;ScreenMode returnMode=ScreenMode.MainMenu;bool fullscreen=true,craftTab,showInteractionHints=true,showNotices=true;int selectedSector,settingsTab,qualityIndex,vSyncSetting=1,resolutionIndex;
         CharacterPreview preview;InventorySystem bag;ItemStack held;int selectedKind=-1,selectedIndex=-1;
-        Texture2D menuBackdrop;
+        Texture2D menuBackdrop,settingsBackdrop;
         Resolution[] resolutions;
         string[] sectorNames={"ВЛОЖЕННЫЙ СЕКТОР #01","ОФИСНЫЙ ЛАБИРИНТ","ЗАТОПЛЕННЫЙ КОРПУС","ТЕХНИЧЕСКИЙ СЕКТОР"};
         string[] sectorInfo={"Жёлтые комнаты · низкий риск · базовые припасы","Пустые рабочие места · ресурсы и первые следы","Влажные коридоры · электроника · высокий риск","Оружейный тайник · броня · критический риск"};
@@ -23,7 +24,11 @@ namespace Subsistence
 
         void Awake()
         {
-            menuBackdrop=PixelArtFactory.MenuCorridor().texture;
+            menuBackdrop=Resources.Load<Texture2D>("Art/menu_backrooms");
+            settingsBackdrop=Resources.Load<Texture2D>("Art/menu_maintenance_backrooms");
+            if(menuBackdrop==null)menuBackdrop=PixelArtFactory.MenuCorridor().texture;
+            if(menuBackdrop!=null){menuBackdrop.filterMode=FilterMode.Bilinear;menuBackdrop.wrapMode=TextureWrapMode.Clamp;}
+            if(settingsBackdrop!=null){settingsBackdrop.filterMode=FilterMode.Bilinear;settingsBackdrop.wrapMode=TextureWrapMode.Clamp;}
             fullscreen=PlayerPrefs.GetInt("Subsistence.Fullscreen",1)!=0;
             brightnessSetting=PlayerPrefs.GetFloat("Subsistence.Brightness",.5f);
             uiScaleSetting=PlayerPrefs.GetFloat("Subsistence.UIScale",.94f);
@@ -58,17 +63,22 @@ namespace Subsistence
         }
         void EnsureStyles()
         {
-            uiScale=Mathf.Clamp(Mathf.Clamp(Screen.width/1280f,.62f,1.22f)*uiScaleSetting,.55f,1.22f);
-            float textScale=Mathf.Max(uiScale,.80f);
-            if(tiny!=null&&Mathf.Abs(tiny.fontSize-Mathf.RoundToInt(9*textScale))<1)return;
+            float viewportScale=Mathf.Min(Screen.width/1280f,Screen.height/720f);
+            uiScale=Mathf.Clamp(Mathf.Clamp(viewportScale,.62f,1.22f)*uiScaleSetting,.55f,1.22f);
+            // Keep typography readable even on small windowed resolutions; layout and text scale separately.
+            float textScale=Mathf.Clamp(Mathf.Min(Screen.width/1280f,Screen.height/720f),1f,1.5f);
+            if(tiny!=null&&Mathf.Abs(tiny.fontSize-Mathf.RoundToInt(12*textScale))<1&&Mathf.Abs(heading.fontSize-Mathf.RoundToInt(24*uiScale))<1)return;
             lightTex=Tex(new Color(.75f,.83f,.52f));lightHover=Tex(new Color(.87f,.93f,.62f));darkTex=Tex(new Color(.105f,.13f,.105f));darkHover=Tex(new Color(.16f,.19f,.14f));slotTex=Tex(new Color(.11f,.135f,.112f));slotHover=Tex(new Color(.19f,.22f,.16f));selectedTex=Tex(new Color(.25f,.29f,.19f));
-            tiny=Style(9*textScale,false);small=Style(11*textScale,false);body=Style(13*textScale,false);heading=Style(24*uiScale,true);title=Style(42*uiScale,true);mono=Style(10*textScale,true);mono.font=Font.CreateDynamicFontFromOSFont("Arial",Mathf.RoundToInt(12*textScale));
-            lightButton=MakeButton(lightTex,lightHover,new Color(.11f,.15f,.11f),Mathf.RoundToInt(11*textScale));darkButton=MakeButton(darkTex,darkHover,ink,Mathf.RoundToInt(10*textScale));
+            uiFont=Font.CreateDynamicFontFromOSFont("Arial",Mathf.RoundToInt(18*textScale));
+            if(uiFont==null)uiFont=GUI.skin.font;
+            tiny=Style(12*textScale,false);small=Style(14*textScale,false);body=Style(16*textScale,false);heading=Style(24*uiScale,true);title=Style(44*uiScale,true);mono=Style(12*textScale,true);
+            tiny.font=small.font=body.font=heading.font=title.font=mono.font=uiFont;
+            lightButton=MakeButton(lightTex,lightHover,new Color(.11f,.15f,.11f),Mathf.RoundToInt(13*textScale));darkButton=MakeButton(darkTex,darkHover,ink,Mathf.RoundToInt(13*textScale));
             slotStyle=new GUIStyle(GUI.skin.button){padding=new RectOffset(1,1,1,1),border=new RectOffset(1,1,1,1),fontSize=1};slotStyle.normal.background=slotTex;slotStyle.hover.background=slotHover;slotStyle.active.background=selectedTex;
         }
-        GUIStyle Style(float size,bool bold){return new GUIStyle(GUI.skin.label){fontSize=Mathf.RoundToInt(size),fontStyle=bold?FontStyle.Bold:FontStyle.Normal,richText=true,wordWrap=true,alignment=TextAnchor.UpperLeft};}
+        GUIStyle Style(float size,bool bold){return new GUIStyle(GUI.skin.label){fontSize=Mathf.RoundToInt(size),fontStyle=bold?FontStyle.Bold:FontStyle.Normal,richText=true,wordWrap=true,alignment=TextAnchor.UpperLeft,padding=new RectOffset(0,0,0,0),margin=new RectOffset(0,0,0,0),clipping=TextClipping.Clip};}
         GUIStyle MakeButton(Texture2D normal,Texture2D hover,Color text,int size)
-        {var s=new GUIStyle(GUI.skin.button){fontSize=size,fontStyle=FontStyle.Bold,alignment=TextAnchor.MiddleLeft,padding=new RectOffset(Mathf.RoundToInt(14*uiScale),8,0,0)};s.normal.background=normal;s.hover.background=hover;s.active.background=hover;s.normal.textColor=text;s.hover.textColor=text;s.active.textColor=text;return s;}
+        {var s=new GUIStyle(GUI.skin.button){font=uiFont,fontSize=size,fontStyle=FontStyle.Bold,alignment=TextAnchor.MiddleLeft,padding=new RectOffset(Mathf.RoundToInt(14*uiScale),8,0,0)};s.normal.background=normal;s.hover.background=hover;s.active.background=hover;s.normal.textColor=text;s.hover.textColor=text;s.active.textColor=text;return s;}
         void OnGUI()
         {
             if(RunState.Instance==null)return;EnsureStyles();
@@ -90,9 +100,9 @@ namespace Subsistence
         void DrawMainMenu()
         {
             DrawBackdrop();
-            float leftW=Screen.width*.465f;
-            Panel(R(0,0,leftW,Screen.height),new Color(.012f,.014f,.011f,.91f));
-            for(int i=0;i<12;i++)DrawRect(R(leftW+i*Screen.width*.006f,0,Screen.width*.0061f,Screen.height),new Color(.012f,.014f,.011f,.91f-i*.068f));
+            float leftW=Screen.width*.38f;
+            Panel(R(0,0,leftW,Screen.height),new Color(.012f,.014f,.011f,.82f));
+            for(int i=0;i<12;i++)DrawRect(R(leftW+i*Screen.width*.006f,0,Screen.width*.0061f,Screen.height),new Color(.012f,.014f,.011f,.82f-i*.061f));
             float x=66*uiScale,y=52*uiScale,w=Mathf.Min(leftW-112*uiScale,520*uiScale);
             DrawRect(R(x,y,356*uiScale,2*uiScale),copper);
             DrawGameLogo(R(x+5*uiScale,y+20*uiScale,43*uiScale,43*uiScale));
@@ -101,8 +111,8 @@ namespace Subsistence
             Label("СЕКТОР 09  /  СИГНАЛ НЕСТАБИЛЕН",R(x+5*uiScale,y+120*uiScale,w-10*uiScale,20*uiScale),mono,ink);
             DrawRule(x+5*uiScale,y+151*uiScale,w-18*uiScale);
             float bx=x+5*uiScale,bw=w-20*uiScale;
-            DrawMenuAction("НАЧАТЬ ИГРУ","БЫСТРЫЙ ВХОД В ЛОКАЛЬНЫЙ МИР",R(bx,y+178*uiScale,bw,74*uiScale),()=>SetMode(ScreenMode.ServerSelect));
-            DrawMenuOption("01","ВЫБОР СЕРВЕРА","НАЙТИ СВОЙ СЕКТОР",R(bx,y+273*uiScale,bw,57*uiScale),()=>SetMode(ScreenMode.ServerSelect));
+            DrawMenuAction("НАЧАТЬ ИГРУ","ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(bx,y+178*uiScale,bw,74*uiScale),()=>SetMode(ScreenMode.ServerSelect));
+            DrawMenuOption("01","ВЫБОР СЕКТОРА","ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(bx,y+273*uiScale,bw,57*uiScale),()=>SetMode(ScreenMode.ServerSelect));
             DrawMenuOption("02","НАСТРОЙКИ","ИЗОБРАЖЕНИЕ И УПРАВЛЕНИЕ",R(bx,y+339*uiScale,bw,57*uiScale),()=>{returnMode=ScreenMode.MainMenu;SetMode(ScreenMode.Settings);});
             DrawMenuOption("03","ПОДДЕРЖКА","ПОМОЩЬ И СВЯЗЬ",R(bx,y+405*uiScale,bw,57*uiScale),()=>SetMode(ScreenMode.Support));
             DrawMenuOption("04","ВЫЙТИ","ЗАВЕРШИТЬ СЕАНС",R(bx,y+471*uiScale,bw,57*uiScale),()=>Application.Quit());
@@ -161,13 +171,13 @@ namespace Subsistence
         }
         void DrawSectorSelect()
         {
-            DrawBackdrop();float panelW=Screen.width*.95f,panelH=Screen.height*.93f;Rect r=CenteredPanel(panelW,panelH);Panel(r,new Color(.025f,.029f,.024f,.90f));
-            Label("S U B S I S T E N C E   /   С Е Т Ь   У Б Е Ж И Щ",R(r.x+28*uiScale,r.y+20*uiScale,r.width-56*uiScale,17*uiScale),tiny,muted);
-            Label("ВЫБОР СЕРВЕРА",R(r.x+27*uiScale,r.y+48*uiScale,r.width*.65f,44*uiScale),title,ink);
-            Label("НАЙДИ СЕКТОР, ГДЕ МОЖНО ПЕРЕЖИТЬ ЭТУ НОЧЬ",R(r.x+30*uiScale,r.y+99*uiScale,r.width*.65f,18*uiScale),mono,muted);
-            Rect net=R(r.x+r.width-244*uiScale,r.y+30*uiScale,212*uiScale,49*uiScale);Panel(net,new Color(.05f,.055f,.045f,.85f));
-            Label("●  СЕТЬ НЕДОСТУПНА",R(net.x+12*uiScale,net.y+6*uiScale,net.width-24*uiScale,17*uiScale),mono,gold);
-            Label("ЛОКАЛЬНЫЙ РЕЖИМ  ·  0 ОНЛАЙН-СЕРВЕРОВ",R(net.x+12*uiScale,net.y+27*uiScale,net.width-24*uiScale,13*uiScale),tiny,muted);
+            DrawBackdrop();float panelW=Screen.width*.95f,panelH=Screen.height*.93f;Rect r=CenteredPanel(panelW,panelH);Panel(r,new Color(.025f,.029f,.024f,.78f));
+            Label("SUBSISTENCE  /  ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(r.x+28*uiScale,r.y+20*uiScale,r.width-56*uiScale,17*uiScale),tiny,muted);
+            Label("ВЫБОР СЕКТОРА",R(r.x+27*uiScale,r.y+48*uiScale,r.width*.65f,44*uiScale),title,ink);
+            Label("ВЫБЕРИ ЗОНУ ДЛЯ ОДИНОЧНОЙ ЭКСПЕДИЦИИ",R(r.x+30*uiScale,r.y+99*uiScale,r.width*.65f,18*uiScale),mono,muted);
+            float netW=Mathf.Min(280*uiScale,r.width*.30f);Rect net=R(r.x+r.width-netW-30*uiScale,r.y+30*uiScale,netW,49*uiScale);Panel(net,new Color(.05f,.055f,.045f,.88f));
+            Label("●  СЕТЬ ОФФЛАЙН",R(net.x+12*uiScale,net.y+6*uiScale,net.width-24*uiScale,17*uiScale),mono,gold);
+            Label("ТОЛЬКО ЛОКАЛЬНАЯ ИГРА",R(net.x+12*uiScale,net.y+27*uiScale,net.width-24*uiScale,13*uiScale),tiny,muted);
             DrawRule(r.x+28*uiScale,r.y+127*uiScale,r.width-56*uiScale);
             float leftX=r.x+25*uiScale,leftW=r.width*.225f,listX=leftX+leftW+19*uiScale,listW=r.x+r.width-28*uiScale-listX;
             Rect filter=R(leftX,r.y+145*uiScale,leftW,Mathf.Min(392*uiScale,r.height*.51f));Panel(filter,new Color(.044f,.049f,.041f,.88f));
@@ -208,18 +218,19 @@ namespace Subsistence
             Label(sectorInfo[selectedSector],R(detail.x+19*uiScale,detail.y+65*uiScale,listW*.61f,33*uiScale),small,muted);
             Label("СТАТУС\nЛОКАЛЬНО\n\nПИНГ\nНЕ ПРИМЕНИМ\n\nСЕССИЯ\nОДИНОЧНАЯ",R(detail.x+listW*.68f,detail.y+14*uiScale,listW*.27f,detail.height-26*uiScale),tiny,ink);
             if(Button("НАЧАТЬ ЛОКАЛЬНУЮ ЭКСПЕДИЦИЮ   →",R(detail.x+listW*.62f,detail.y+detail.height-51*uiScale,listW*.36f,39*uiScale),lightButton))StartRun();
-            Label("СЕТЕВЫЕ СЕРВЕРЫ НЕ ПОДКЛЮЧЕНЫ — СПИСОК РЕАЛЬНЫХ ОНЛАЙН-МИРОВ НЕ ПОКАЗЫВАЕТСЯ",R(leftX,r.y+r.height-42*uiScale,r.width*.60f,15*uiScale),tiny,muted);
+            Label("ОФЛАЙН: СЕКТОРА ЗАПУСКАЮТСЯ ТОЛЬКО ЛОКАЛЬНО",R(leftX,r.y+r.height-42*uiScale,r.width*.60f,15*uiScale),tiny,muted);
             if(Button("ESC  /  НАЗАД",R(r.x+r.width-160*uiScale,r.y+r.height-48*uiScale,130*uiScale,30*uiScale),darkButton))SetMode(ScreenMode.MainMenu);
         }
         string ShortSectorName(int i){return i==0?"ВЛОЖЕННЫЙ":i==1?"ОФИС":i==2?"ЗАТОПЛЕННЫЙ":"ТЕХНИЧЕСКИЙ";}
         void DrawBackdrop()
         {
             Rect screen=new Rect(0,0,Screen.width,Screen.height);
-            if(MenuBackdropActive&&menuBackdrop!=null)
+            Texture2D backdrop=(Mode==ScreenMode.Settings||Mode==ScreenMode.ServerSelect)&&settingsBackdrop!=null?settingsBackdrop:menuBackdrop;
+            if(MenuBackdropActive&&backdrop!=null)
             {
-                GUI.DrawTexture(screen,menuBackdrop,ScaleMode.ScaleAndCrop,true);
-                DrawRect(screen,new Color(.018f,.020f,.016f,.25f));
-                DrawRect(new Rect(0,Screen.height*.78f,Screen.width,Screen.height*.22f),new Color(.008f,.010f,.008f,.48f));
+                GUI.DrawTexture(screen,backdrop,ScaleMode.ScaleAndCrop,true);
+                DrawRect(screen,new Color(.018f,.020f,.016f,.22f));
+                DrawRect(new Rect(0,Screen.height*.78f,Screen.width,Screen.height*.22f),new Color(.008f,.010f,.008f,.35f));
             }
             else DrawRect(screen,new Color(.012f,.016f,.012f,.38f));
             DrawRect(new Rect(0,0,Screen.width,Screen.height*.035f),new Color(.008f,.010f,.008f,.22f));
@@ -500,7 +511,7 @@ namespace Subsistence
         }
         void DrawSettings()
         {
-            DrawBackdrop();float pw=Mathf.Min(Screen.width*.94f,1420*uiScale),ph=Mathf.Min(Screen.height*.92f,840*uiScale);Rect r=CenteredPanel(pw,ph);Panel(r,new Color(.025f,.030f,.025f,.91f));
+            DrawBackdrop();float pw=Mathf.Min(Screen.width*.94f,1420*uiScale),ph=Mathf.Min(Screen.height*.92f,840*uiScale);Rect r=CenteredPanel(pw,ph);Panel(r,new Color(.025f,.030f,.025f,.78f));
             Label("S U B S I S T E N C E  /  С И С Т Е М А",R(r.x+26*uiScale,r.y+18*uiScale,r.width*.62f,16*uiScale),tiny,muted);
             Label("НАСТРОЙКИ",R(r.x+25*uiScale,r.y+46*uiScale,r.width*.7f,45*uiScale),title,ink);
             Label("ПОДГОТОВЬСЯ К ВЫХОДУ В КОРИДОР",R(r.x+30*uiScale,r.y+96*uiScale,r.width*.6f,16*uiScale),mono,muted);
@@ -514,7 +525,7 @@ namespace Subsistence
                 bool clicked=GUI.Button(tr,GUIContent.none,GUIStyle.none);if(i==settingsTab)DrawRect(R(tr.x,tr.y,4*uiScale,tr.height),copper);
                 Label(tabs[i],R(tr.x+16*uiScale,tr.y+14*uiScale,tr.width-30*uiScale,18*uiScale),mono,i==settingsTab?ink:muted);if(clicked)settingsTab=i;
             }
-            Rect content=R(contentX,contentY,contentW,contentH);Panel(content,new Color(.037f,.043f,.036f,.87f));
+            Rect content=R(contentX,contentY,contentW,contentH);Panel(content,new Color(.037f,.043f,.036f,.82f));
             if(settingsTab==0)DrawGraphicsSettings(content);
             else if(settingsTab==1)DrawSoundSettings(content);
             else if(settingsTab==2)DrawControlRows(content);
