@@ -24,6 +24,8 @@ namespace Subsistence
                 Tiled(parent,"Level 0 · yellow patterned wallpaper",PixelArtFactory.WallTile(0),new Vector2(center,3.9f),new Vector2(SegmentLength,7.8f),-20);
                 Tiled(parent,"Level 0 · damp old carpet",PixelArtFactory.FloorTile(0),new Vector2(center,-.18f),new Vector2(SegmentLength,.52f),-10);
                 Tiled(parent,"Level 0 · drop ceiling panels",PixelArtFactory.CeilingTile(0),new Vector2(center,7.92f),new Vector2(SegmentLength,.34f),-15);
+                if(section==1||section==3)
+                    PixelRect(parent,"Level 0 · weak-lamp shadow pool",new Vector2(x+12f,4.0f),new Vector2(16f,6.6f),new Color(.025f,.032f,.024f,.20f),-19);
                 BuildLevelZeroDetails(parent,x,section);
             }
             var floor=new GameObject("Level 0 · continuous walkable carpet");floor.transform.SetParent(parent,false);
@@ -32,7 +34,7 @@ namespace Subsistence
 
             // Repeating, slightly shifted wall mouths and false corridors create visual disorientation without blocking movement.
             BuildFalsePassage(parent,-2f,0);BuildFalsePassage(parent,28f,1);BuildFalsePassage(parent,69f,2);
-            BuildManilaRoom(parent,39f);
+            BuildManilaRoom(parent,39f);BuildDustMotes(parent);
 
             for(int i=0;i<5;i++)
             {
@@ -42,6 +44,19 @@ namespace Subsistence
                 PixelRect(parent,"Level 0 · carpet wet sheen",new Vector2(x+.28f,.055f),new Vector2(.31f,.025f),new Color(.60f,.54f,.31f,.48f),-6);
             }
             BuildBoundary(parent,Level0Start-1.5f,"Level 0 starting wall");
+        }
+
+        static void BuildDustMotes(Transform parent)
+        {
+            for(int i=0;i<18;i++)
+            {
+                float x=Level0Start+3.5f+i*6.4f;
+                float y=1.15f+(i*17%49)*.105f;
+                float size=.035f+(i%3)*.012f;
+                var mote=PixelRect(parent,"Level 0 · drifting dust mote",new Vector2(x,y),new Vector2(size,size),
+                    new Color(.84f,.76f,.56f,.22f+(i%3)*.035f),2);
+                mote.AddComponent<AmbientDust2D>().Initialize(i);
+            }
         }
 
         static void BuildLevelZeroDetails(Transform parent,float x,int section)
@@ -55,15 +70,16 @@ namespace Subsistence
             AddWallOutlet(parent,new Vector2(outletX,1.0f));
             if(section==1||section==3)AddWallOutlet(parent,new Vector2(x+27f,1.35f));
 
-            // Office-style suspended fluorescents, warm enough to yellow the wallpaper, with an unstable buzz/flicker.
-            for(int i=0;i<2;i++)
-            {
-                float lx=x+7.5f+i*14f;
-                PixelRect(parent,"Level 0 · fluorescent fixture housing",new Vector2(lx,7.48f),new Vector2(3.05f,.23f),new Color(.49f,.45f,.30f),-4);
-                PixelRect(parent,"Level 0 · fluorescent tube",new Vector2(lx,7.35f),new Vector2(2.56f,.10f),new Color(.96f,.88f,.62f),-3);
-                PixelRect(parent,"Level 0 · fluorescent hotspot",new Vector2(lx,7.29f),new Vector2(2.12f,.045f),new Color(1f,.93f,.69f,.48f),-2);
-                AddLightFlicker(parent,new Vector2(lx,7.20f),new Color(1f,.91f,.62f,.20f));
-            }
+            // One unevenly spaced panel per room; half are weak/dead so Level 0 stays dim and relies on the torch.
+            float lx=x+(section%2==0?9.5f:21.5f);
+            bool activeTube=section==0||section==2;
+            PixelRect(parent,"Level 0 · stained fluorescent fixture housing",new Vector2(lx,7.48f),new Vector2(3.05f,.23f),new Color(.34f,.32f,.24f),-4);
+            PixelRect(parent,"Level 0 · weak fluorescent tube",new Vector2(lx,7.35f),new Vector2(2.56f,.10f),
+                activeTube?new Color(.69f,.64f,.47f):new Color(.20f,.20f,.16f),-3);
+            PixelRect(parent,"Level 0 · dusty fluorescent diffuser",new Vector2(lx,7.29f),new Vector2(2.12f,.045f),
+                activeTube?new Color(.90f,.82f,.60f,.24f):new Color(.23f,.22f,.16f,.40f),-2);
+            if(activeTube)AddLightFlicker(parent,new Vector2(lx,7.20f),new Color(1f,.89f,.57f,.16f));
+            else PixelRect(parent,"Level 0 · dead ballast scorch",new Vector2(lx+.9f,7.20f),new Vector2(.45f,.06f),new Color(.13f,.12f,.09f),-1);
 
             // Old pasted-over patches, vertical water marks and slightly misaligned paper repeats.
             if(section%2==0)
@@ -94,7 +110,7 @@ namespace Subsistence
             PixelRect(parent,"Level 0 · left wallpaper return",new Vector2(x-w*.5f,2.0f+h*.5f),new Vector2(.15f,h),new Color(.84f,.73f,.43f),-5);
             PixelRect(parent,"Level 0 · right wallpaper return",new Vector2(x+w*.5f,2.0f+h*.5f),new Vector2(.15f,h),new Color(.73f,.62f,.36f),-5);
             PixelRect(parent,"Level 0 · passage ceiling shadow",new Vector2(x,2f+h),new Vector2(w+.2f,.16f),new Color(.75f,.65f,.40f),-5);
-            PixelRect(parent,"Level 0 · far fluorescent glow",new Vector2(x,2.0f+h*.5f+1.4f),new Vector2(.92f,.08f),new Color(1f,.91f,.62f,.84f),-4);
+            PixelRect(parent,"Level 0 · weak false fluorescent glow",new Vector2(x,2.0f+h*.5f+1.4f),new Vector2(.72f,.055f),new Color(1f,.88f,.57f,.34f),-4);
         }
 
         static void BuildManilaRoom(Transform parent,float x)
@@ -191,10 +207,11 @@ namespace Subsistence
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=sprite;renderer.drawMode=SpriteDrawMode.Tiled;renderer.size=size;renderer.sortingOrder=order;renderer.tileMode=SpriteTileMode.Continuous;
         }
 
-        static void PixelRect(Transform parent,string name,Vector2 center,Vector2 size,Color color,int order)
+        static GameObject PixelRect(Transform parent,string name,Vector2 center,Vector2 size,Color color,int order)
         {
             var go=new GameObject(name);go.transform.SetParent(parent,false);go.transform.position=new Vector3(center.x,center.y,0);go.transform.localScale=new Vector3(size.x,size.y,1);
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Block(Color.white);renderer.color=color;renderer.sortingOrder=order;
+            return go;
         }
 
         static void AddLightFlicker(Transform parent,Vector2 position,Color color)

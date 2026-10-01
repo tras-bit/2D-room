@@ -245,7 +245,8 @@ namespace Subsistence
             Label("●  "+time+"   /   SHIFT 01",R(Screen.width-margin-rw+9*uiScale,margin+6*uiScale,rw-18*uiScale,15*uiScale),mono,ink);
             Label("LOCAL FIELD TEST",R(Screen.width-margin-rw+9*uiScale,margin+24*uiScale,rw-18*uiScale,12*uiScale),tiny,muted);
             DrawHotbar();DrawRustVitals(s);DrawInteractHint(p);
-            Label("WASD MOVE  ·  E USE  ·  Q ATTACK  ·  H MED",R(margin,Screen.height-25*uiScale,285*uiScale,14*uiScale),tiny,muted);
+            string lightState=p!=null&&p.FlashlightOn?"F  LIGHT ON":"F  LIGHT OFF";
+            Label("A/D MOVE  ·  SPACE JUMP  ·  E USE  ·  "+lightState+"  ·  Q ATTACK  ·  H MED",R(margin,Screen.height-25*uiScale,510*uiScale,14*uiScale),tiny,muted);
             if(showNotices&&s.NoticeTime>0){float nw=Mathf.Min(480*uiScale,Screen.width*.72f);Panel(R((Screen.width-nw)/2,Screen.height-190*uiScale,nw,27*uiScale),new Color(.045f,.06f,.046f,.95f));Label(s.Notice,R((Screen.width-nw)/2+10*uiScale,Screen.height-184*uiScale,nw-20*uiScale,16*uiScale),small,ink);}
         }
         void DrawCompass(int level)
@@ -380,15 +381,15 @@ namespace Subsistence
             Panel(R(x,y,w,h),new Color(.075f,.089f,.074f));
             float tabsY=y+7*uiScale,tabW=(w-26*uiScale)/2;
             bool hasCrate=bag.OpenContainer!=null;
-            if(Button("КОНТЕЙНЕР",R(x+9*uiScale,tabsY,tabW,29*uiScale),!craftTab&&hasCrate?lightButton:darkButton)&&hasCrate)craftTab=false;
+            if(Button("КОРОБКА",R(x+9*uiScale,tabsY,tabW,29*uiScale),!craftTab&&hasCrate?lightButton:darkButton)&&hasCrate)craftTab=false;
             if(Button("КРАФТ",R(x+17*uiScale+tabW,tabsY,tabW,29*uiScale),craftTab?lightButton:darkButton))craftTab=true;
             if(!craftTab&&hasCrate)DrawContainerContents(x,y,w,h);
-            else if(!craftTab&&!hasCrate){Label("ПРЕДМЕТЫ",R(x+12*uiScale,y+50*uiScale,w-24*uiScale,20*uiScale),mono,lime);Label("Подойди к ящику в мире и нажми E, чтобы осмотреть содержимое.",R(x+13*uiScale,y+80*uiScale,w-26*uiScale,65*uiScale),small,muted);Label("УРОВНИ ДОБЫЧИ",R(x+13*uiScale,y+166*uiScale,w-26*uiScale,18*uiScale),tiny,gold);Label("I   Ресурсы и базовые запасы\nII  Оружие, патроны, электроника\nIII Броня, карабин, карта доступа",R(x+13*uiScale,y+190*uiScale,w-26*uiScale,96*uiScale),small,ink);}
+            else if(!craftTab&&!hasCrate){Label("ПРЕДМЕТЫ",R(x+12*uiScale,y+50*uiScale,w-24*uiScale,20*uiScale),mono,lime);Label("Подойди к картонной коробке и нажми E, чтобы осмотреть содержимое.",R(x+13*uiScale,y+80*uiScale,w-26*uiScale,65*uiScale),small,muted);Label("УРОВНИ ДОБЫЧИ",R(x+13*uiScale,y+166*uiScale,w-26*uiScale,18*uiScale),tiny,gold);Label("I   Ресурсы и базовые запасы\nII  Оружие, патроны, электроника\nIII Броня, карабин, карта доступа",R(x+13*uiScale,y+190*uiScale,w-26*uiScale,96*uiScale),small,ink);}
             else DrawCraftPanel(x,y,w,h);
         }
         void DrawContainerContents(float x,float y,float w,float h)
         {
-            var crate=bag.OpenContainer;Label("ЯЩИК  /  TIER "+crate.Tier,R(x+12*uiScale,y+47*uiScale,w-24*uiScale,20*uiScale),mono,lime);
+            var crate=bag.OpenContainer;Label("КОРОБКА  /  TIER "+crate.Tier,R(x+12*uiScale,y+47*uiScale,w-24*uiScale,20*uiScale),mono,lime);
             Label(crate.DisplayName.ToUpperInvariant(),R(x+12*uiScale,y+69*uiScale,w-24*uiScale,18*uiScale),tiny,muted);
             int columns=4;float gap=5*uiScale,cell=Mathf.Min(66*uiScale,(w-28*uiScale-3*gap)/columns),gridW=columns*cell+3*gap,start=x+(w-gridW)/2,top=y+99*uiScale;
             for(int i=0;i<crate.Items.Length;i++)DrawItemSlot(crate.Items,i,R(start+(i%columns)*(cell+gap),top+(i/columns)*(cell+gap),cell,cell),2);
@@ -438,7 +439,15 @@ namespace Subsistence
             if(!stack.Empty)
             {
                 Texture2D icon=ItemIconFactory.Get(stack.id);float pad=rect.width*.12f;GUI.DrawTexture(R(rect.x+pad,rect.y+pad,rect.width-pad*2,rect.height-pad*2),icon,ScaleMode.ScaleToFit,true);
-                if(stack.count>1){DrawRect(R(rect.x+rect.width*.55f,rect.y+rect.height*.69f,rect.width*.40f,rect.height*.23f),new Color(.025f,.035f,.028f,.94f));Label(stack.count.ToString(),R(rect.x+rect.width*.55f,rect.y+rect.height*.68f,rect.width*.39f,rect.height*.24f),tiny,ink);}
+                if(rect.width>=44*uiScale)
+                {
+                    string shortName=ItemIconFactory.ShortLabel(stack.id);float badgeH=13*uiScale;
+                    float badgeW=Mathf.Min(rect.width*.59f,(shortName.Length*5.8f+7f)*uiScale);
+                    Rect badge=R(rect.x+2*uiScale,rect.y+rect.height-badgeH-2*uiScale,badgeW,badgeH);
+                    DrawRect(badge,new Color(.018f,.025f,.021f,.96f));Outline(badge,new Color(.45f,.43f,.31f,.92f));
+                    Label(shortName,R(badge.x+2*uiScale,badge.y,badge.width-4*uiScale,badge.height),tiny,ink);
+                }
+                if(stack.count>1){DrawRect(R(rect.x+rect.width*.63f,rect.y+rect.height*.69f,rect.width*.33f,rect.height*.23f),new Color(.025f,.035f,.028f,.96f));Label(stack.count.ToString(),R(rect.x+rect.width*.63f,rect.y+rect.height*.68f,rect.width*.32f,rect.height*.24f),tiny,ink);}
             }
             if(number>0)Label(number.ToString(),R(rect.x+3*uiScale,rect.y+2*uiScale,rect.width*.25f,rect.height*.22f),tiny,muted);
         }
@@ -578,7 +587,7 @@ namespace Subsistence
         {
             Label("УПРАВЛЕНИЕ",R(r.x+24*uiScale,r.y+17*uiScale,r.width-48*uiScale,25*uiScale),heading,ink);
             string[] keys={"W / A / S / D   ИЛИ   ← →","SPACE / W / ↑","E","Q","F","1 — 6","TAB / I","SHIFT + ЛКМ","ПКМ","ESC"};
-            string[] actions={"Движение по коридору","Прыжок","Открыть ящик · подобрать · торговец · лифт","Атака / отбить сталкера","Фонарь","Выбрать слот пояса","Инвентарь и экипировка","Быстрый перенос стопки","Разделить стопку / положить одну","Пауза или закрыть окно"};
+            string[] actions={"Движение по коридору","Прыжок","Открыть коробку · подобрать · торговец · лифт","Атака / отбить сталкера","Фонарь","Выбрать слот пояса","Инвентарь и экипировка","Быстрый перенос стопки","Разделить стопку / положить одну","Пауза или закрыть окно"};
             float top=r.y+61*uiScale,row=29*uiScale;
             for(int i=0;i<keys.Length;i++){float yy=top+i*row;Label(keys[i],R(r.x+26*uiScale,yy,r.width*.37f,20*uiScale),mono,gold);Label(actions[i],R(r.x+r.width*.40f,yy,r.width*.56f,20*uiScale),small,ink);}
         }

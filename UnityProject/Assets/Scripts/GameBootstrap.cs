@@ -40,9 +40,9 @@ namespace Subsistence
         void CreateContainers()
         {
             // Sparse, non-blocking supply finds preserve Level 0's empty, resource-starved entry-level feeling.
-            MakeContainer(-9f,1,"LEVEL 0 · DAMP CARDBOARD BOX");
-            MakeContainer(18f,1,"LEVEL 0 · LOST SUPPLY CASE");
-            MakeContainer(62f,2,"LEVEL 0 · SEALED WALL CACHE");
+            MakeContainer(-9f,1,"LEVEL 0 · ПОВРЕЖДЁННАЯ КОРОБКА");
+            MakeContainer(18f,1,"LEVEL 0 · ПОТЕРЯННАЯ ПОСЫЛКА");
+            MakeContainer(62f,2,"LEVEL 0 · ЗАКЛЕЕННАЯ КОРОБКА С ПРИПАСАМИ");
         }
         void MakeContainer(float x,int tier,string name)
         {

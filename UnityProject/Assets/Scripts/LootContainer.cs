@@ -15,7 +15,7 @@ namespace Subsistence
         public void Initialize(int tier,string displayName)
         {
             if(initialized)return;initialized=true;Tier=Mathf.Clamp(tier,1,3);DisplayName=displayName;
-            var trigger=GetComponent<BoxCollider2D>();if(trigger==null)trigger=gameObject.AddComponent<BoxCollider2D>();trigger.isTrigger=true;trigger.size=new Vector2(1.2f,1.0f);trigger.offset=new Vector2(0,.5f);
+            var trigger=GetComponent<BoxCollider2D>();if(trigger==null)trigger=gameObject.AddComponent<BoxCollider2D>();trigger.isTrigger=true;trigger.size=new Vector2(1.36f,1.16f);trigger.offset=new Vector2(0,.56f);
             var renderer=GetComponent<SpriteRenderer>();if(renderer==null)renderer=gameObject.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Crate2D(Tier);renderer.sortingOrder=7;
             FillLoot();
         }
@@ -60,12 +60,12 @@ namespace Subsistence
         }
         public void Open(InventorySystem inventory)
         {
-            if(!initialized)Initialize(1,"Supply Crate");
+            if(!initialized)Initialize(1,"Коробка с припасами");
             if(!WasOpened){WasOpened=true;RunState.Instance?.RecordSupplyCrate();}
             inventory.SetOpenContainer(this);
             AudioDirector.Instance?.Play("metal",.48f);
         }
-        public string GetHint(){return WasOpened?"E  ·  ОСМОТРЕТЬ ЯЩИК":"E  ·  ОТКРЫТЬ "+DisplayName.ToUpperInvariant();}
+        public string GetHint(){return WasOpened?"E  ·  ОСМОТРЕТЬ КОРОБКУ":"E  ·  ОТКРЫТЬ "+DisplayName.ToUpperInvariant();}
         public void ResetForNewRun(){Array.Clear(Items,0,Items.Length);WasOpened=false;FillLoot();}
     }
 }

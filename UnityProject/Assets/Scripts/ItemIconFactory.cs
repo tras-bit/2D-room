@@ -18,15 +18,15 @@ namespace Subsistence
             for(int x=0;x<S;x++)
             {
                 float backgroundShade=.75f+.25f*y/S;
-                pixels[y*S+x]=(Color32)new Color(.045f*backgroundShade,.058f*backgroundShade,.05f*backgroundShade,1f);
+                pixels[y*S+x]=(Color32)new Color(.075f*backgroundShade,.083f*backgroundShade,.069f*backgroundShade,1f);
             }
-            DrawRect(1,1,62,62,C(10,15,13));DrawRect(3,3,58,58,C(83,83,66));DrawRect(4,4,56,56,C(20,26,22));
-            DrawRect(5,5,54,1,C(146,126,78));DrawRect(5,57,54,1,C(56,65,53));
-            DrawRect(5,6,1,50,C(52,61,51));DrawRect(58,6,1,50,C(52,61,51));
-            DrawRect(8,8,48,46,C(16,22,20));
+            DrawRect(1,1,62,62,C(9,14,12));DrawRect(3,3,58,58,C(112,101,68));DrawRect(4,4,56,56,C(27,34,29));
+            DrawRect(5,5,54,1,C(184,151,83));DrawRect(5,57,54,1,C(68,77,61));
+            DrawRect(5,6,1,50,C(61,74,58));DrawRect(58,6,1,50,C(61,74,58));
+            DrawRect(8,8,48,46,C(22,30,26));
 
             Color32 main=(Color32)ItemCatalog.Get(id).iconColor;
-            Color32 shade=Dark(main,.52f),dark=Dark(main,.34f),light=Light(main,1.30f),glint=C(222,204,145);
+            Color32 shade=Dark(main,.68f),dark=Dark(main,.43f),light=Light(main,1.48f),glint=C(238,219,159);
             switch(id)
             {
                 case ItemId.Flashlight:
@@ -225,6 +225,40 @@ namespace Subsistence
             texture=new Texture2D(S,S,TextureFormat.RGBA32,false)
             {filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp,hideFlags=HideFlags.HideAndDontSave,name="ItemIcon_"+id};
             texture.SetPixels32(pixels);texture.Apply(false,true);cache[id]=texture;return texture;
+        }
+
+        public static string ShortLabel(ItemId id)
+        {
+            switch(id)
+            {
+                case ItemId.Flashlight:return "ФОН";
+                case ItemId.Cloth:return "ТКАН";
+                case ItemId.Scrap:return "ЛОМ";
+                case ItemId.MetalFragments:return "МЕТ";
+                case ItemId.Wood:return "ДЕР";
+                case ItemId.Water:return "ВОДА";
+                case ItemId.CannedFood:return "ЕДА";
+                case ItemId.Bandage:return "БИНТ";
+                case ItemId.Pistol:return "ПИСТ";
+                case ItemId.PistolAmmo:return "9ММ";
+                case ItemId.Rifle:return "КАРБ";
+                case ItemId.RifleAmmo:return "5.56";
+                case ItemId.Pipe:return "ТРУБ";
+                case ItemId.Blueprint:return "СХЕМ";
+                case ItemId.WorkbenchI:return "В1";
+                case ItemId.WorkbenchII:return "В2";
+                case ItemId.FieldJacket:return "КУРТ";
+                case ItemId.FieldPants:return "ШТАН";
+                case ItemId.WorkBoots:return "БОТ";
+                case ItemId.Backpack:return "РЮК";
+                case ItemId.Helmet:return "КАСК";
+                case ItemId.ArmorVest:return "БРОН";
+                case ItemId.Medkit:return "АПТ";
+                case ItemId.Keycard:return "КАРТ";
+                case ItemId.HazmatSuit:return "ХАЗ";
+                case ItemId.CircuitBoard:return "ПЛАТ";
+                default:return "ITEM";
+            }
         }
 
         static Color32 C(byte r,byte g,byte b)=>new Color32(r,g,b,255);

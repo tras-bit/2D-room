@@ -36,7 +36,7 @@ namespace Subsistence
                 case SupplyPickup.Kind.Water:bag?.Add(ItemId.Water,1);Drink(34);Notify("Найдена вода.");break;
             }
         }
-        public void RecordSupplyCrate(){SuppliesFound++;Notify("Запасы обнаружены · ящик осмотрен.");}
+        public void RecordSupplyCrate(){SuppliesFound++;Notify("Запасы обнаружены · коробка осмотрена.");}
         public void EnterLevel(int level)
         {
             if(level<=CurrentLevel)return;

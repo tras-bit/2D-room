@@ -22,13 +22,20 @@ GLOW=(240,196,109,255); CONCRETE=(58,63,53,255); CONCRETE_L=(78,79,63,255)
 WET=(35,62,60,255); CREAM=(180,165,120,255); PALE=(208,193,143,255)
 
 class Canvas:
-    def __init__(self,w,h,color=INK): self.w,self.h=w,h; self.p=[color]*(w*h)
+    SCALE=2
+    def __init__(self,w,h,color=INK):
+        self.w,self.h=w*self.SCALE,h*self.SCALE
+        self.p=[color]*(self.w*self.h)
     def rect(self,x,y,w,h,c):
+        x*=self.SCALE;y*=self.SCALE;w*=self.SCALE;h*=self.SCALE
         for yy in range(max(0,y),min(self.h,y+h)):
             a=yy*self.w+max(0,x); b=yy*self.w+min(self.w,x+w)
             if b>a:self.p[a:b]=[c]*(b-a)
-    def px(self,x,y,c):
-        if 0<=x<self.w and 0<=y<self.h:self.p[y*self.w+x]=c
+    def px(self,x,y,c):self.rect(x,y,1,1,c)
+    def micro(self,x,y,c):
+        """One physical texel of extra wear detail inside the 2x authored pixel grid."""
+        px=x*self.SCALE+1;py=y*self.SCALE+1
+        if 0<=px<self.w and 0<=py<self.h:self.p[py*self.w+px]=c
     def hline(self,x,y,w,c):self.rect(x,y,w,1,c)
     def vline(self,x,y,h,c):self.rect(x,y,1,h,c)
     def tile(self,x,y,w,h,base,light,dark,grout):
@@ -96,6 +103,18 @@ def models_sheet():
     c.rect(x+9,y+4,11,7,(176,130,91,255));c.rect(x+8,y+3,13,3,(48,43,35,255))
     c.rect(x+7,y+4,3,6,(48,43,35,255));c.rect(x+18,y+7,3,2,INK);c.px(x+20,y+7,PALE)
     c.rect(x+6,y+2,6,2,RUST_L);c.rect(x+20,y+12,2,2,AMBER)
+    # High-frequency seams, hardware and fabric wear become visible at the enlarged sprite resolution.
+    c.rect(x+7,y+15,1,8,CONCRETE_L);c.rect(x+22,y+16,1,7,TILE_A)
+    c.rect(x+8,y+18,4,1,AMBER);c.rect(x+8,y+19,1,3,RUST_L);c.rect(x+18,y+18,4,1,AMBER)
+    c.rect(x+12,y+25,6,1,INK);c.rect(x+13,y+26,4,1,CONCRETE_L)
+    c.rect(x+9,y+27,1,4,CREAM);c.rect(x+20,y+27,1,3,CREAM)
+    c.rect(x+8,y+31,3,1,AMBER);c.rect(x+18,y+31,3,1,AMBER)
+    c.rect(x+8,y+35,5,1,CONCRETE_L);c.rect(x+16,y+35,5,1,TILE_A)
+    c.rect(x+7,y+39,6,1,RUST_L);c.rect(x+16,y+39,6,1,RUST_L)
+    c.rect(x+7,y+43,7,1,CREAM);c.rect(x+16,y+43,7,1,CREAM)
+    c.micro(x+10,y+16,PALE);c.micro(x+20,y+17,GLOW);c.micro(x+9,y+22,WET)
+    c.micro(x+18,y+23,RUST_L);c.micro(x+11,y+29,CONCRETE_L);c.micro(x+19,y+33,GLOW)
+    c.micro(x+12,y+37,TILE_C);c.micro(x+17,y+37,TILE_B);c.micro(x+14,y+6,CREAM)
 
     # 02 · sealed survey worker, separate silhouette and high-contrast visor.
     x=37;y=10
@@ -111,6 +130,14 @@ def models_sheet():
     c.rect(x+10,y+7,11,6,(152,125,50,255));c.rect(x+9,y+5,14,3,(192,157,57,255))
     c.rect(x+10,y+8,11,3,(42,58,54,255));c.rect(x+12,y+9,7,1,WET)
     c.rect(x+7,y+2,18,3,DEEP);c.rect(x+9,y+1,14,2,AMBER);c.px(x+24,y+6,RUST_L)
+    c.rect(x+8,y+17,2,8,CONCRETE_L);c.rect(x+22,y+17,2,8,AMBER)
+    c.rect(x+9,y+24,5,1,DEEP);c.rect(x+18,y+24,4,1,DEEP)
+    c.rect(x+10,y+29,4,1,CREAM);c.rect(x+18,y+29,3,1,CREAM)
+    c.rect(x+11,y+32,9,1,DEEP);c.rect(x+13,y+34,5,1,AMBER)
+    c.rect(x+9,y+39,4,1,AMBER);c.rect(x+18,y+39,3,1,CONCRETE_L)
+    c.rect(x+12,y+41,8,1,RUST_L);c.rect(x+8,y+43,5,1,STEEL)
+    c.micro(x+9,y+18,PALE);c.micro(x+20,y+18,GLOW);c.micro(x+12,y+27,WET)
+    c.micro(x+17,y+27,RUST_L);c.micro(x+11,y+36,AMBER);c.micro(x+20,y+35,CREAM)
 
     # 03 · the watcher: asymmetric, slumped human outline with impossible eyes.
     x=73;y=10
@@ -125,6 +152,12 @@ def models_sheet():
     c.rect(x+12,y+13,3,3,AMBER);c.rect(x+19,y+14,3,3,RUST_L)
     c.rect(x+14,y+18,8,2,INK);c.rect(x+12,y+20,3,3,DEEP)
     c.rect(x+5,y+23,3,2,RUST_L);c.rect(x+24,y+22,3,3,RUST_L)
+    c.rect(x+9,y+22,3,1,TILE_C);c.rect(x+19,y+23,4,1,TILE_A)
+    c.rect(x+7,y+29,3,1,RUST_L);c.rect(x+22,y+31,4,1,RUST_L)
+    c.rect(x+8,y+34,4,1,STEEL);c.rect(x+17,y+35,5,1,CONCRETE_L)
+    c.rect(x+10,y+38,3,2,INK);c.rect(x+19,y+39,3,1,INK)
+    c.rect(x+13,y+42,7,1,DEEP);c.micro(x+13,y+15,GLOW);c.micro(x+20,y+16,PALE)
+    c.micro(x+8,y+26,RUST_L);c.micro(x+23,y+28,CREAM);c.micro(x+15,y+33,WET)
 
     # 04 · security door asset, isolated with its own outline, bolts and warm lock strip.
     x=111;y=8
@@ -138,12 +171,17 @@ def models_sheet():
         c.px(x+6,yy,CREAM);c.px(x+36,yy,CREAM)
     c.rect(x+18,y+10,8,2,RUST_L);c.px(x+21,y+11,GLOW)
 
-    # 05 · crate and caged wall lamp as individual inventory/environment models.
+    # 05 · a damp shipping carton and caged wall lamp as separate environmental models.
     x=163;y=47
-    c.rect(x,y,23,24,INK);c.rect(x+2,y+2,19,20,(81,70,49,255))
-    c.rect(x+4,y+4,3,16,(111,87,54,255));c.rect(x+16,y+4,3,16,(105,82,52,255))
-    c.rect(x+4,y+10,15,3,STEEL);c.rect(x+9,y+8,5,6,RUST_L);c.rect(x+10,y+9,3,3,AMBER)
-    c.rect(x+2,y+20,19,2,STEEL);c.px(x+3,y+21,CREAM);c.px(x+19,y+21,CREAM)
+    c.rect(x+1,y+1,21,22,INK);c.rect(x+3,y+4,17,16,(153,117,69,255))
+    c.rect(x+4,y+5,13,14,(184,145,88,255));c.rect(x+17,y+5,2,14,(112,82,53,255))
+    c.rect(x+3,y+3,8,3,(177,137,80,255));c.rect(x+12,y+3,8,3,(148,108,65,255))
+    c.rect(x+10,y+3,3,17,(203,173,109,255));c.rect(x+9,y+3,5,2,CREAM)
+    c.rect(x+5,y+9,8,6,(202,188,146,255));c.rect(x+6,y+10,6,1,(125,91,55,255))
+    c.rect(x+6,y+12,3,1,(84,75,56,255));c.rect(x+10,y+12,2,2,(84,75,56,255))
+    c.rect(x+4,y+16,6,1,(119,89,59,255));c.rect(x+15,y+17,3,2,(104,76,53,255))
+    c.rect(x+2,y+20,20,2,STEEL);c.rect(x+3,y+22,4,1,CREAM);c.rect(x+18,y+21,3,1,RUST_L)
+    c.micro(x+5,y+6,(221,181,110,255));c.micro(x+16,y+8,(89,70,51,255));c.micro(x+7,y+18,WET)
     x=163;y=15
     c.rect(x+2,y,19,3,INK);c.rect(x+4,y+2,15,4,STEEL)
     c.rect(x+6,y+6,11,2,AMBER);c.rect(x+8,y+8,7,2,GLOW)
@@ -162,6 +200,12 @@ def models_sheet():
     c.rect(x+11,y+8,10,3,(57,43,34,255));c.rect(x+19,y+8,2,2,CREAM)
     c.rect(x+7,y+21,19,3,RUST);c.rect(x+22,y+23,4,7,(105,77,46,255))
     c.rect(x+23,y+19,4,4,(57,128,74,255));c.rect(x+24,y+20,2,2,(142,199,106,255))
+    c.rect(x+9,y+18,4,1,CONCRETE_L);c.rect(x+20,y+18,3,1,TILE_C)
+    c.rect(x+8,y+22,5,1,RUST_L);c.rect(x+18,y+22,5,1,AMBER)
+    c.rect(x+10,y+29,4,1,CONCRETE_L);c.rect(x+18,y+30,4,1,CONCRETE_L)
+    c.rect(x+10,y+33,12,1,DEEP);c.rect(x+11,y+36,3,2,AMBER);c.rect(x+19,y+37,3,1,RUST_L)
+    c.rect(x+8,y+40,5,1,CREAM);c.rect(x+18,y+40,5,1,CREAM)
+    c.micro(x+12,y+16,PALE);c.micro(x+20,y+16,GLOW);c.micro(x+14,y+27,WET)
 
     # 07 · paired side-view elevator-door states: closed steel leaves, then the open bay.
     x=236;y=8

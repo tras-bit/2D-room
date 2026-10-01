@@ -10,11 +10,11 @@ namespace Subsistence
         Rigidbody2D body;
         InventorySystem inventory;
         CharacterVisual2D character;
-        SpriteRenderer beamRenderer;
+        SpriteRenderer beamRenderer,handFlashlightRenderer;
         bool grounded,flashlightOn=true,insideElevator;
         float invulnerable,attackCooldown,footstepClock,horizontal,elevatorMinX,elevatorMaxX;
         int facing=1;
-        public bool FlashlightOn=>flashlightOn;
+        public bool FlashlightOn=>flashlightOn&&inventory!=null&&inventory.Count(ItemId.Flashlight)>0;
         public InventorySystem Inventory=>inventory;
         public CharacterVisual2D Character=>character;
 
@@ -24,9 +24,12 @@ namespace Subsistence
             character=GetComponent<CharacterVisual2D>();if(character==null)character=gameObject.AddComponent<CharacterVisual2D>();
             inventory=GetComponent<InventorySystem>();if(inventory==null)inventory=gameObject.AddComponent<InventorySystem>();
             inventory.Character=character;
-            var beam=new GameObject("Pixel flashlight beam");beam.transform.SetParent(transform,false);
-            beamRenderer=beam.AddComponent<SpriteRenderer>();beamRenderer.sprite=PixelArtFactory.FlashlightBeam();beamRenderer.sortingOrder=8;beamRenderer.color=new Color(1f,.91f,.68f,.54f);
-            beam.transform.localPosition=new Vector3(.3f,1.05f,0);beamRenderer.enabled=flashlightOn;
+            var beam=new GameObject("Visible flashlight cone");beam.transform.SetParent(transform,false);
+            beamRenderer=beam.AddComponent<SpriteRenderer>();beamRenderer.sprite=PixelArtFactory.FlashlightBeam();beamRenderer.sortingOrder=9;beamRenderer.color=new Color(1f,.94f,.74f,.78f);
+            beam.transform.localPosition=new Vector3(.34f,1.02f,0);beamRenderer.enabled=flashlightOn;
+            var heldLight=new GameObject("Handheld pixel flashlight");heldLight.transform.SetParent(transform,false);
+            handFlashlightRenderer=heldLight.AddComponent<SpriteRenderer>();handFlashlightRenderer.sprite=PixelArtFactory.HandFlashlight();handFlashlightRenderer.sortingOrder=11;
+            heldLight.transform.localPosition=new Vector3(.30f,.58f,0);
         }
         void Start(){inventory.BeginRun();}
 
@@ -52,11 +55,17 @@ namespace Subsistence
             }
             else footstepClock=0;
             if(character!=null)character.SetMotion(Mathf.Abs(horizontal),grounded,!grounded,facing,false);
+            bool ownsFlashlight=inventory!=null&&inventory.Count(ItemId.Flashlight)>0;
             if(beamRenderer!=null)
             {
-                beamRenderer.flipX=facing<0;
-                beamRenderer.enabled=flashlightOn;
-                beamRenderer.transform.localPosition=new Vector3(facing*.3f,1.05f,0);
+                beamRenderer.flipX=facing<0;beamRenderer.enabled=FlashlightOn;
+                beamRenderer.transform.localPosition=new Vector3(facing*.34f,1.02f,0);
+            }
+            if(handFlashlightRenderer!=null)
+            {
+                handFlashlightRenderer.flipX=facing<0;handFlashlightRenderer.enabled=ownsFlashlight;
+                handFlashlightRenderer.color=FlashlightOn?Color.white:new Color(.55f,.58f,.53f,1f);
+                handFlashlightRenderer.transform.localPosition=new Vector3(facing*.31f,.59f,0);
             }
         }
         void FixedUpdate()
@@ -121,7 +130,11 @@ namespace Subsistence
         }
         void ToggleFlashlight()
         {
-            flashlightOn=!flashlightOn;if(beamRenderer!=null)beamRenderer.enabled=flashlightOn;
+            if(inventory==null||inventory.Count(ItemId.Flashlight)<=0)
+            {RunState.Instance?.Notify("Фонарь потерян — найди новый.",1.4f);return;}
+            flashlightOn=!flashlightOn;
+            if(beamRenderer!=null)beamRenderer.enabled=FlashlightOn;
+            if(handFlashlightRenderer!=null)handFlashlightRenderer.color=FlashlightOn?Color.white:new Color(.55f,.58f,.53f,1f);
             AudioDirector.Instance?.Play("ui",.45f);RunState.Instance.Notify(flashlightOn?"Фонарь включён.":"Фонарь выключен.",1.4f);
         }
         public void EnterElevator(float centerX,float halfWidth)

@@ -17,16 +17,39 @@ namespace Subsistence
             Texture2D atlas=Resources.Load<Texture2D>("PixelArt/individual_models");
             if(atlas==null)return null;
             atlas.filterMode=FilterMode.Point;atlas.wrapMode=TextureWrapMode.Clamp;
-            var rect=new Rect(x,atlas.height-top-height,width,height);
-            var sprite=Sprite.Create(atlas,rect,new Vector2(.5f,0f),pixelsPerUnit,0,SpriteMeshType.FullRect);
+            const int detailScale=2;
+            int cropWidth=width*detailScale,cropHeight=height*detailScale;
+            var rect=new Rect(x*detailScale,atlas.height-(top+height)*detailScale,cropWidth,cropHeight);
+            var sprite=Sprite.Create(atlas,rect,new Vector2(.5f,0f),pixelsPerUnit*detailScale,0,SpriteMeshType.FullRect);
             sprite.name=name;cache[key]=sprite;return sprite;
         }
 
-        static Sprite Build(string name, int width, int height, Action<Color32[]> paint, Vector2 pivot, float pixelsPerUnit = 16f)
+        static Sprite Build(string name, int width, int height, Action<Color32[]> paint, Vector2 pivot, float pixelsPerUnit = 16f,int detailScale=1)
         {
-            var pixels = new Color32[width * height];
-            for (int i = 0; i < pixels.Length; i++) pixels[i] = Clear;
-            paint(pixels);
+            detailScale=Mathf.Max(1,detailScale);
+            int paintWidth=Mathf.Max(1,width/detailScale),paintHeight=Mathf.Max(1,height/detailScale);
+            var painted=new Color32[paintWidth*paintHeight];
+            for(int i=0;i<painted.Length;i++)painted[i]=Clear;
+            paint(painted);
+            Color32[] pixels=painted;
+            if(detailScale>1)
+            {
+                pixels=new Color32[width*height];
+                for(int y=0;y<paintHeight;y++)for(int x=0;x<paintWidth;x++)
+                {
+                    Color32 color=painted[y*paintWidth+x];
+                    for(int sy=0;sy<detailScale;sy++)for(int sx=0;sx<detailScale;sx++)
+                        pixels[(y*detailScale+sy)*width+x*detailScale+sx]=color;
+                    // Fine, deterministic cloth grain inside jackets and trousers; outline and face remain crisp.
+                    int hash=(x*37+y*61+name.Length*13)&15;
+                    if(color.a>0&&y>=6&&y<=34&&x>=7&&x<=25&&hash<3)
+                    {
+                        int dx=x*detailScale+(hash&1),dy=y*detailScale+((hash>>1)&1);
+                        Color32 glint=new Color32((byte)Mathf.Min(255,color.r+10),(byte)Mathf.Min(255,color.g+9),(byte)Mathf.Min(255,color.b+6),color.a);
+                        pixels[dy*width+dx]=glint;
+                    }
+                }
+            }
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false)
             {
                 name = name + "_PixelTexture",
@@ -58,11 +81,6 @@ namespace Subsistence
             int head=GetGear(gear,GearSlot.Head),chest=GetGear(gear,GearSlot.Chest),legs=GetGear(gear,GearSlot.Legs),feet=GetGear(gear,GearSlot.Feet),back=GetGear(gear,GearSlot.Back);
             string key=$"survivor_{frame}_{head}_{chest}_{legs}_{feet}_{back}_{hostile}";
             if(cache.TryGetValue(key,out var cached))return cached;
-            if(!hostile&&frame==0&&head==0&&chest==0&&legs==0&&feet==0&&back==0)
-            {
-                var piskelModel=AtlasSlice("survivor_base",4,10,24,46,30f);
-                if(piskelModel!=null)return piskelModel;
-            }
             bool jacket=chest==(int)ItemId.FieldJacket,vest=chest==(int)ItemId.ArmorVest,hazmat=chest==(int)ItemId.HazmatSuit;
             bool fieldPants=legs==(int)ItemId.FieldPants,boots=feet==(int)ItemId.WorkBoots,pack=back==(int)ItemId.Backpack,helmet=head==(int)ItemId.Helmet;
             int stride=frame==1?2:frame==3?-2:0,arm=frame==1?-1:frame==3?1:0;
@@ -70,7 +88,7 @@ namespace Subsistence
             Color32 shirt=hazmat?C(196,157,49):jacket?C(91,110,71):C(102,112,100);
             Color32 trousers=hazmat?C(182,144,42):fieldPants?C(108,119,83):C(68,78,69);
             Color32 leather=boots?C(112,78,49):C(45,49,44),hair=hostile?C(48,57,48):C(48,43,36);
-            var sprite=Build("Survivor_"+key,32,48,p=>
+            var sprite=Build("Survivor_"+key,64,96,p=>
             {
                 // Boots and articulated trouser legs.
                 Rect(p,32,48,5+stride,0,11,4,outline);Rect(p,32,48,18-stride,0,10,4,outline);
@@ -92,6 +110,17 @@ namespace Subsistence
                 if(jacket){Rect(p,32,48,14,20,2,12,C(177,160,109));Rect(p,32,48,8,24,5,4,C(75,91,61));Rect(p,32,48,19,24,5,4,C(75,91,61));Rect(p,32,48,9,25,3,1,C(158,147,102));Rect(p,32,48,20,25,3,1,C(158,147,102));Rect(p,32,48,11,20,2,3,C(123,137,92));Rect(p,32,48,8,31,4,2,C(52,62,51));Rect(p,32,48,20,31,4,2,C(52,62,51));}
                 if(vest){Rect(p,32,48,8,21,17,11,C(58,67,61));Rect(p,32,48,10,22,13,8,C(91,98,82));Rect(p,32,48,15,22,3,8,C(54,62,59));Rect(p,32,48,8,29,17,2,C(133,116,77));Rect(p,32,48,7,20,4,3,C(80,89,72));Rect(p,32,48,22,20,4,3,C(80,89,72));Rect(p,32,48,10,25,4,5,C(112,111,83));Rect(p,32,48,19,25,4,5,C(112,111,83));Rect(p,32,48,11,26,2,2,C(178,146,85));Rect(p,32,48,20,26,2,2,C(178,146,85));}
                 if(hazmat){Rect(p,32,48,9,19,14,14,C(192,153,42));Rect(p,32,48,15,20,2,12,C(236,198,78));Rect(p,32,48,4,22+arm,3,9,C(192,153,42));Rect(p,32,48,25,22-arm,3,9,C(192,153,42));Rect(p,32,48,12,27,8,3,C(228,193,78));Rect(p,32,48,10,22,2,8,C(80,115,107));Rect(p,32,48,20,22,2,8,C(80,115,107));}
+                // Fine tailoring: shoulder piping, pocket stitching, worn cloth flecks and reinforced hems.
+                Rect(p,32,48,8,20,1,8,hostile?C(91,100,73):C(143,140,103));
+                Rect(p,32,48,23,20,1,8,hostile?C(84,96,71):C(130,135,105));
+                Rect(p,32,48,10,28,4,1,C(158,147,105));Rect(p,32,48,19,28,4,1,C(151,140,101));
+                Rect(p,32,48,11,29,1,3,C(71,81,62));Rect(p,32,48,21,29,1,3,C(68,79,61));
+                Rect(p,32,48,13,22,1,7,C(128,128,101));Rect(p,32,48,17,22,1,7,C(53,64,53));
+                Rect(p,32,48,8+stride,7,6,1,C(136,126,91));Rect(p,32,48,19-stride,7,6,1,C(125,123,91));
+                Rect(p,32,48,8+stride,14,5,1,C(48,56,49));Rect(p,32,48,20-stride,14,5,1,C(47,56,49));
+                Rect(p,32,48,7+stride,3,6,1,C(191,148,91));Rect(p,32,48,20-stride,3,5,1,C(181,136,84));
+                Rect(p,32,48,13,38,1,2,C(215,178,129));Rect(p,32,48,21,39,1,1,hostile?C(227,91,45):C(69,56,43));
+                Rect(p,32,48,12,42,5,1,C(71,64,48));Rect(p,32,48,18,42,3,1,C(66,61,48));
                 // Neck, face in profile and swept hair.
                 Rect(p,32,48,13,32,7,4,skin);Rect(p,32,48,10,35,13,10,outline);Rect(p,32,48,11,36,11,8,skin);
                 Rect(p,32,48,10,43,12,4,hair);Rect(p,32,48,9,41,4,5,hair);Rect(p,32,48,19,43,3,3,hair);
@@ -102,7 +131,7 @@ namespace Subsistence
                 if(hazmat){Rect(p,32,48,9,35,15,11,C(191,151,42));Rect(p,32,48,17,37,7,5,C(54,64,57));Rect(p,32,48,21,35,4,3,C(135,143,119));Rect(p,32,48,18,34,6,3,C(121,125,100));}
                 if(frame==2){Rect(p,32,48,12,13,6,3,trousers);Rect(p,32,48,18,13,7,3,trousers);}
                 if(frame==1||frame==3){Rect(p,32,48,3,20+arm,4,3,skin);Rect(p,32,48,25,20-arm,4,3,skin);}
-            },new Vector2(.5f,0f),32f);
+            },new Vector2(.5f,0f),64f,2);
             cache[key]=sprite;return sprite;
         }
         static int GetGear(ItemStack[] gear,GearSlot slot)=>gear!=null&&gear.Length>(int)slot?(int)gear[(int)slot].id:0;
@@ -302,14 +331,39 @@ namespace Subsistence
         }
         public static Sprite Crate2D(int tier)
         {
-            string key="crate_2d_"+tier;if(cache.TryGetValue(key,out var found))return found;
-            Color32 wood=tier==1?C(117,84,48):tier==2?C(72,91,68):C(72,65,57),metal=C(61,69,66);
-            var sprite=Build(key,48,40,p=>
+            // Supply containers are battered shipping cartons, not wooden treasure chests.
+            string key="cardboard_box_2d_"+tier;if(cache.TryGetValue(key,out var found))return found;
+            Color32 face=tier==1?C(157,119,72):tier==2?C(125,119,88):C(106,115,91);
+            Color32 side=tier==1?C(111,78,48):tier==2?C(83,81,63):C(68,79,66);
+            Color32 edge=tier==1?C(190,149,89):tier==2?C(160,147,101):C(145,153,113);
+            Color32 tape=tier==3?C(164,132,67):C(207,178,111);
+            var sprite=Build(key,56,48,p=>
             {
-                Rect(p,48,40,3,1,42,34,C(36,42,37));Rect(p,48,40,5,4,38,31,wood);Rect(p,48,40,4,32,40,5,metal);
-                Rect(p,48,40,8,5,4,28,tier==3?C(119,103,70):C(87,80,58));Rect(p,48,40,36,5,4,28,tier==3?C(119,103,70):C(87,80,58));
-                Rect(p,48,40,6,14,36,3,metal);Rect(p,48,40,21,12,6,9,tier==3?C(180,106,58):C(154,133,82));
-                Rect(p,48,40,22,14,4,4,tier==3?C(227,100,52):C(201,180,110));Rect(p,48,40,4,36,3,3,C(167,144,94));Rect(p,48,40,41,36,3,3,C(167,144,94));
+                Rect(p,56,48,5,2,47,43,C(30,32,27));
+                // Uneven carton silhouette with dark, scuffed lower edge and a shaded right plane.
+                Rect(p,56,48,5,8,45,33,C(77,57,39));Rect(p,56,48,7,7,40,33,face);
+                Rect(p,56,48,44,10,7,28,side);Rect(p,56,48,8,38,42,3,C(85,67,48));
+                Rect(p,56,48,9,8,18,5,edge);Rect(p,56,48,28,8,15,5,face);
+                Rect(p,56,48,9,6,17,3,C(174,135,81));Rect(p,56,48,29,6,13,3,C(132,99,63));
+                // Folded top flaps and a continuous strip of aged packing tape.
+                Rect(p,56,48,23,6,9,34,tape);Rect(p,56,48,25,7,2,30,C(230,199,130));
+                Rect(p,56,48,9,13,14,1,C(112,81,52));Rect(p,56,48,32,13,11,1,C(107,78,52));
+                Rect(p,56,48,11,15,3,1,C(203,163,101));Rect(p,56,48,37,15,4,1,C(183,144,88));
+                // Shipping label with large, legible handling marks rather than tiny fake text.
+                Rect(p,56,48,11,19,19,13,C(216,198,158));Rect(p,56,48,12,20,17,1,C(239,226,185));
+                Rect(p,56,48,13,22,10,1,C(102,80,54));Rect(p,56,48,13,25,7,1,C(127,99,65));
+                Rect(p,56,48,14,28,2,3,C(57,65,53));Rect(p,56,48,17,27,2,4,C(57,65,53));
+                Rect(p,56,48,21,26,1,5,C(57,65,53));Rect(p,56,48,24,28,2,3,C(57,65,53));
+                if(tier>1){Rect(p,56,48,32,21,13,10,C(177,157,112));Rect(p,56,48,35,23,7,2,C(99,74,49));Rect(p,56,48,37,25,3,4,C(99,74,49));}
+                // Damp bloom, crushed corners, staple marks, frayed seams and tape wrinkles.
+                Rect(p,56,48,8,34,12,2,C(103,85,59));Rect(p,56,48,10,35,7,1,C(189,145,82));
+                Rect(p,56,48,38,34,8,2,C(102,78,53));Rect(p,56,48,47,17,2,9,C(91,67,47));
+                Rect(p,56,48,6,10,2,5,C(102,72,47));Rect(p,56,48,8,9,2,2,C(213,174,108));
+                Rect(p,56,48,45,37,6,3,C(49,48,37));Rect(p,56,48,8,39,10,2,C(203,158,94));
+                Rect(p,56,48,18,40,7,1,C(122,89,56));Rect(p,56,48,30,41,11,1,C(119,86,55));
+                Rect(p,56,48,11,17,2,1,C(63,57,43));Rect(p,56,48,39,17,2,1,C(65,58,43));
+                Rect(p,56,48,26,12,1,6,C(149,118,76));Rect(p,56,48,27,31,1,6,C(177,142,89));
+                Rect(p,56,48,5,41,46,2,C(29,33,29));Rect(p,56,48,8,44,9,1,C(210,169,105));
             },new Vector2(.5f,0),32f);
             cache[key]=sprite;return sprite;
         }
@@ -449,30 +503,44 @@ namespace Subsistence
             }, new Vector2(.5f,0),20f);
         }
 
+        public static Sprite HandFlashlight()
+        {
+            return Build("Handheld_Flashlight",28,14,p=>
+            {
+                Rect(p,28,14,4,3,20,8,C(12,19,17));Rect(p,28,14,7,4,15,5,C(65,76,65));
+                Rect(p,28,14,2,2,8,10,C(31,42,37));Rect(p,28,14,1,4,8,6,C(106,116,90));
+                Rect(p,28,14,0,5,4,4,C(184,163,106));Rect(p,28,14,1,5,2,4,C(237,207,129));
+                Rect(p,28,14,9,4,2,5,C(142,136,96));Rect(p,28,14,13,4,1,5,C(39,53,47));
+                Rect(p,28,14,18,4,3,5,C(90,99,76));Rect(p,28,14,21,4,3,5,C(44,57,48));
+                Rect(p,28,14,9,8,7,5,C(47,56,47));Rect(p,28,14,11,10,3,3,C(30,38,34));
+                Rect(p,28,14,9,12,7,1,C(157,125,71));Rect(p,28,14,5,2,4,1,C(194,164,99));
+                Rect(p,28,14,24,5,2,2,C(153,68,44));
+            },new Vector2(.05f,.5f),40f);
+        }
+
         public static Sprite FlashlightBeam()
         {
-            const int width=128,height=56;
+            const int width=192,height=88,center=height/2;
             return Build("Flashlight_Beam",width,height,p=>
             {
                 for(int x=0;x<width;x++)
                 {
                     float t=x/(float)(width-1);
-                    int halfHeight=Mathf.Max(1,Mathf.RoundToInt((1f-t)*height*.44f));
-                    byte alpha=(byte)Mathf.Clamp(Mathf.RoundToInt(30*(1f-t)*(1f-t)),0,30);
-                    for(int y=height/2-halfHeight;y<=height/2+halfHeight;y++)
-                        if(y>=0&&y<height)p[y*width+x]=new Color32(210,216,151,alpha);
+                    int halfHeight=Mathf.Max(2,Mathf.RoundToInt(Mathf.Lerp(3f,35f,t)));
+                    for(int y=center-halfHeight;y<=center+halfHeight;y++)
+                    {
+                        if(y<0||y>=height)continue;
+                        float edge=Mathf.Abs(y-center)/(float)halfHeight;
+                        float core=1f-edge;
+                        float falloff=(.34f+.66f*core*core)*(1f-.62f*t);
+                        byte alpha=(byte)Mathf.Clamp(Mathf.RoundToInt(92f*falloff),10,92);
+                        Color32 tint=edge<.28f?new Color32(255,245,205,alpha):new Color32(218,210,157,alpha);
+                        p[y*width+x]=tint;
+                    }
                 }
-            },new Vector2(.04f,.5f),32f);
+            },new Vector2(.025f,.5f),32f);
         }
 
-        public static Sprite Crate()
-        {
-            return Build("Weathered_Crate",48,48,p=>{
-                Rect(p,48,48,4,2,40,40,C(94,81,54));Rect(p,48,48,8,6,32,31,C(123,101,62));
-                Rect(p,48,48,8,33,32,4,C(75,69,50));Rect(p,48,48,8,17,32,4,C(160,132,78));
-                Rect(p,48,48,11,7,4,27,C(72,68,51));Rect(p,48,48,33,7,4,27,C(76,69,49));
-                Rect(p,48,48,6,4,5,5,C(171,157,106));Rect(p,48,48,36,4,5,5,C(165,145,98));
-            },new Vector2(.5f,0),20f);
-        }
+        public static Sprite Crate()=>Crate2D(1);
     }
 }
