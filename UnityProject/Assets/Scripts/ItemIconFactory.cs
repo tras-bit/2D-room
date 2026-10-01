@@ -17,8 +17,8 @@ namespace Subsistence
             for(int y=0;y<S;y++)
             for(int x=0;x<S;x++)
             {
-                float shade=.75f+.25f*y/S;
-                pixels[y*S+x]=(Color32)new Color(.045f*shade,.058f*shade,.05f*shade,1f);
+                float backgroundShade=.75f+.25f*y/S;
+                pixels[y*S+x]=(Color32)new Color(.045f*backgroundShade,.058f*backgroundShade,.05f*backgroundShade,1f);
             }
             DrawRect(1,1,62,62,C(10,15,13));DrawRect(3,3,58,58,C(83,83,66));DrawRect(4,4,56,56,C(20,26,22));
             DrawRect(5,5,54,1,C(146,126,78));DrawRect(5,57,54,1,C(56,65,53));
