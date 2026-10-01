@@ -21,11 +21,11 @@
 - В `Packages/manifest.json` подключены:
   - `com.unity.render-pipelines.core: 14.0.11`
   - `com.unity.render-pipelines.universal: 14.0.11`
-- `Assets/Editor/UrpFieldTestSetup.cs` при первом открытии Unity:
+- `Assets/Editor/UrpFieldTestSetup.cs` **не** запускается автоматически при старте редактора (автозапуск вызывал предупреждение Unity про изменение иммутабельных пакетных ассетов). После первого открытия проекта выберите в меню **Tools → Subsistence → Setup URP 2D Pipeline** — скрипт:
   - создаёт `Assets/Settings/Subsistence2DRenderer.asset`
   - создаёт `Assets/Settings/SubsistenceURP.asset`
   - включает HDR, Render Scale 1, MSAA 2x
-  - назначает URP asset в Graphics/Quality
+  - после подтверждения в диалоге назначает URP asset в Graphics/Quality (от назначения можно отказаться и настроить вручную в Edit → Project Settings → Graphics)
 
 ### Runtime-свет
 - `GraphicsBootstrap2D.cs`

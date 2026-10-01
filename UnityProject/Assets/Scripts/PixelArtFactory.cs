@@ -23,6 +23,8 @@ namespace Subsistence
             var rect=new Rect(x*detailScale,atlas.height-(top+height)*detailScale,cropWidth,cropHeight);
             Texture2D slice=CropTexture(atlas,rect);
             Texture2D normal=BuildNormalMap(slice);
+            // Release CPU readability on the slice after normal extraction to save GPU memory.
+            if(slice!=null){try{slice.Apply(false,true);}catch{}}
             SecondarySpriteTexture[] secondary=normal!=null?new[]{new SecondarySpriteTexture{name="_NormalMap",texture=normal}}:Array.Empty<SecondarySpriteTexture>();
             var sprite=Sprite.Create(slice,new Rect(0,0,slice.width,slice.height),new Vector2(.5f,0f),pixelsPerUnit*detailScale,0,SpriteMeshType.FullRect,Vector4.zero,false,secondary);
             sprite.name=name;cache[key]=sprite;return sprite;
@@ -60,36 +62,68 @@ namespace Subsistence
                 wrapMode = TextureWrapMode.Clamp
             };
             texture.SetPixels32(pixels);
-            texture.Apply(false, true);
-            Texture2D normal=BuildNormalMap(texture);
+            // Build the normal map directly from the CPU pixel buffer BEFORE marking the texture
+            // non-readable; otherwise the subsequent GetPixels() call throws.
+            Texture2D normal=BuildNormalMapFromPixels(pixels,width,height);
+            texture.Apply(false, false);
             SecondarySpriteTexture[] secondary=normal!=null?new[]{new SecondarySpriteTexture{name="_NormalMap",texture=normal}}:Array.Empty<SecondarySpriteTexture>();
             return Sprite.Create(texture, new Rect(0, 0, width, height), pivot, pixelsPerUnit, 0, SpriteMeshType.FullRect,Vector4.zero,false,secondary);
         }
 
         static Texture2D CropTexture(Texture2D source,Rect rect)
         {
-            RenderTexture rt=RenderTexture.GetTemporary(Mathf.RoundToInt(rect.width),Mathf.RoundToInt(rect.height),0,RenderTextureFormat.Default,RenderTextureReadWrite.Default);
+            int rw=Mathf.RoundToInt(rect.width),rh=Mathf.RoundToInt(rect.height);
+            RenderTexture rt=RenderTexture.GetTemporary(rw,rh,0,RenderTextureFormat.Default,RenderTextureReadWrite.Default);
             Graphics.Blit(source,rt,new Vector2(rect.width/source.width,rect.height/source.height),new Vector2(rect.x/source.width,rect.y/source.height));
             RenderTexture prev=RenderTexture.active;RenderTexture.active=rt;
-            Texture2D copy=new Texture2D(rt.width,rt.height,TextureFormat.RGBA32,false){filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp,name=source.name+"_crop"};
-            copy.ReadPixels(new Rect(0,0,rt.width,rt.height),0,0);copy.Apply(false,true);
+            // Create as CPU-readable (linear=false mipChain=false) so BuildNormalMap can read pixels.
+            Texture2D copy=new Texture2D(rw,rh,TextureFormat.RGBA32,false,false){filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp,name=source.name+"_crop"};
+            copy.ReadPixels(new Rect(0,0,rw,rh),0,0);copy.Apply(false,false);
             RenderTexture.active=prev;RenderTexture.ReleaseTemporary(rt);return copy;
+        }
+
+        static Texture2D BuildNormalMapFromPixels(Color32[] pixels,int w,int h)
+        {
+            try
+            {
+                Color[] src=new Color[pixels.Length];
+                for(int i=0;i<pixels.Length;i++){Color c=pixels[i];src[i]=new Color(c.r/255f,c.g/255f,c.b/255f,c.a/255f);}
+                Color[] dst=new Color[src.Length];const float bump=2.2f;
+                for(int y=0;y<h;y++)for(int x=0;x<w;x++)
+                {
+                    int xm=x>0?x-1:w-1,xp=x<w-1?x+1:0,ym=y>0?y-1:h-1,yp=y<h-1?y+1:0;
+                    float l=src[y*w+xm].grayscale*src[y*w+xm].a,r=src[y*w+xp].grayscale*src[y*w+xp].a,d=src[ym*w+x].grayscale*src[ym*w+x].a,u=src[yp*w+x].grayscale*src[yp*w+x].a;
+                    Vector3 n=Vector3.Normalize(new Vector3((r-l)*bump,(u-d)*bump,1f));
+                    dst[y*w+x]=new Color(n.x*.5f+.5f,n.y*.5f+.5f,n.z,src[y*w+x].a);
+                }
+                Texture2D normal=new Texture2D(w,h,TextureFormat.RGBA32,false,true){filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
+                normal.SetPixels(dst);normal.Apply(false,true);return normal;
+            }
+            catch{return null;}
         }
 
         static Texture2D BuildNormalMap(Texture2D source)
         {
             if(source==null)return null;
             if(generatedNormals.TryGetValue(source,out var cached))return cached;
-            int w=source.width,h=source.height;Color[] src=source.GetPixels();Color[] dst=new Color[src.Length];const float bump=2.2f;
-            for(int y=0;y<h;y++)for(int x=0;x<w;x++)
+            // Guard against non-readable source textures (common for imported art / post-Apply(true) data).
+            // Returning null means the sprite renders without a normal map instead of crashing.
+            try
             {
-                int xm=x>0?x-1:w-1,xp=x<w-1?x+1:0,ym=y>0?y-1:h-1,yp=y<h-1?y+1:0;
-                float l=src[y*w+xm].grayscale*src[y*w+xm].a,r=src[y*w+xp].grayscale*src[y*w+xp].a,d=src[ym*w+x].grayscale*src[ym*w+x].a,u=src[yp*w+x].grayscale*src[yp*w+x].a;
-                Vector3 n=Vector3.Normalize(new Vector3((r-l)*bump,(u-d)*bump,1f));
-                dst[y*w+x]=new Color(n.x*.5f+.5f,n.y*.5f+.5f,n.z,src[y*w+x].a);
+                if(!source.isReadable){generatedNormals[source]=null;return null;}
+                int w=source.width,h=source.height;Color[] src=source.GetPixels();Color[] dst=new Color[src.Length];const float bump=2.2f;
+                for(int y=0;y<h;y++)for(int x=0;x<w;x++)
+                {
+                    int xm=x>0?x-1:w-1,xp=x<w-1?x+1:0,ym=y>0?y-1:h-1,yp=y<h-1?y+1:0;
+                    float l=src[y*w+xm].grayscale*src[y*w+xm].a,r=src[y*w+xp].grayscale*src[y*w+xp].a,d=src[ym*w+x].grayscale*src[ym*w+x].a,u=src[yp*w+x].grayscale*src[yp*w+x].a;
+                    Vector3 n=Vector3.Normalize(new Vector3((r-l)*bump,(u-d)*bump,1f));
+                    dst[y*w+x]=new Color(n.x*.5f+.5f,n.y*.5f+.5f,n.z,src[y*w+x].a);
+                }
+                Texture2D normal=new Texture2D(w,h,TextureFormat.RGBA32,false,true){filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp,name=source.name+"_Normal"};
+                normal.SetPixels(dst);normal.Apply(false,true);generatedNormals[source]=normal;return normal;
             }
-            Texture2D normal=new Texture2D(w,h,TextureFormat.RGBA32,false,true){filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp,name=source.name+"_Normal"};
-            normal.SetPixels(dst);normal.Apply(false,true);generatedNormals[source]=normal;return normal;
+            catch(UnityException){generatedNormals[source]=null;return null;}
+            catch(System.Exception){generatedNormals[source]=null;return null;}
         }
 
         static void Rect(Color32[] pixels, int width, int height, int x, int y, int w, int h, Color32 color)
