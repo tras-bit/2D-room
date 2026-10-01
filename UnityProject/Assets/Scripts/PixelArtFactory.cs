@@ -77,21 +77,27 @@ namespace Subsistence
                 Rect(p,32,48,6+stride,1,8,2,leather);Rect(p,32,48,19-stride,1,7,2,leather);
                 Rect(p,32,48,7+stride,4,8,13,trousers);Rect(p,32,48,18-stride,4,8,13,trousers);
                 Rect(p,32,48,8+stride,6,2,8,hostile?C(56,67,56):C(83,92,69));Rect(p,32,48,18-stride,6,2,8,hostile?C(49,60,51):C(78,87,66));
-                if(fieldPants){Rect(p,32,48,8+stride,10,6,3,C(93,97,69));Rect(p,32,48,19-stride,10,6,3,C(93,97,69));Rect(p,32,48,10+stride,10,3,2,C(148,137,88));Rect(p,32,48,20-stride,10,3,2,C(148,137,88));}
+                Rect(p,32,48,6+stride,2,10,1,C(87,73,54));Rect(p,32,48,19-stride,2,8,1,C(87,73,54));
+                Rect(p,32,48,8+stride,3,2,2,C(152,122,76));Rect(p,32,48,21-stride,3,2,2,C(152,122,76));
+                if(fieldPants){Rect(p,32,48,8+stride,10,6,3,C(93,97,69));Rect(p,32,48,19-stride,10,6,3,C(93,97,69));Rect(p,32,48,10+stride,10,3,2,C(148,137,88));Rect(p,32,48,20-stride,10,3,2,C(148,137,88));Rect(p,32,48,8+stride,12,6,1,C(54,62,52));Rect(p,32,48,19-stride,12,6,1,C(54,62,52));}
                 Rect(p,32,48,6,16,19,3,outline);Rect(p,32,48,8,17,15,2,hostile?C(68,76,58):C(117,105,75));
-                // Shirt and sleeves: jackets recolour the body and add seams and pockets.
+                Rect(p,32,48,14,17,3,3,C(187,155,91));Rect(p,32,48,15,18,1,1,C(41,46,37));
+                // Jacket cut, shoulder seams, cuffs, front pockets and a readable zipper line.
                 Rect(p,32,48,6,19,20,15,outline);Rect(p,32,48,7,20,18,13,shirt);
                 Rect(p,32,48,3,22+arm,5,10,outline);Rect(p,32,48,4,23+arm,3,8,shirt);
                 Rect(p,32,48,24,22-arm,5,10,outline);Rect(p,32,48,25,23-arm,3,8,shirt);
-                if(jacket){Rect(p,32,48,14,20,2,12,C(146,137,93));Rect(p,32,48,8,24,5,4,C(75,91,61));Rect(p,32,48,19,24,5,4,C(75,91,61));}
-                if(vest){Rect(p,32,48,8,21,17,11,C(58,67,61));Rect(p,32,48,10,22,13,8,C(91,98,82));Rect(p,32,48,15,22,3,8,C(54,62,59));Rect(p,32,48,8,29,17,2,C(133,116,77));Rect(p,32,48,7,20,4,3,C(80,89,72));Rect(p,32,48,22,20,4,3,C(80,89,72));}
-                if(hazmat){Rect(p,32,48,9,19,14,14,C(192,153,42));Rect(p,32,48,15,20,2,12,C(236,198,78));Rect(p,32,48,4,22+arm,3,9,C(192,153,42));Rect(p,32,48,25,22-arm,3,9,C(192,153,42));Rect(p,32,48,12,27,8,3,C(228,193,78));}
+                Rect(p,32,48,4,23+arm,3,1,C(157,148,101));Rect(p,32,48,25,23-arm,3,1,C(157,148,101));
+                Rect(p,32,48,4,21+arm,4,2,C(50,59,48));Rect(p,32,48,24,21-arm,4,2,C(50,59,48));
+                Rect(p,32,48,3,20+arm,4,3,skin);Rect(p,32,48,25,20-arm,4,3,skin);
+                if(jacket){Rect(p,32,48,14,20,2,12,C(177,160,109));Rect(p,32,48,8,24,5,4,C(75,91,61));Rect(p,32,48,19,24,5,4,C(75,91,61));Rect(p,32,48,9,25,3,1,C(158,147,102));Rect(p,32,48,20,25,3,1,C(158,147,102));Rect(p,32,48,11,20,2,3,C(123,137,92));Rect(p,32,48,8,31,4,2,C(52,62,51));Rect(p,32,48,20,31,4,2,C(52,62,51));}
+                if(vest){Rect(p,32,48,8,21,17,11,C(58,67,61));Rect(p,32,48,10,22,13,8,C(91,98,82));Rect(p,32,48,15,22,3,8,C(54,62,59));Rect(p,32,48,8,29,17,2,C(133,116,77));Rect(p,32,48,7,20,4,3,C(80,89,72));Rect(p,32,48,22,20,4,3,C(80,89,72));Rect(p,32,48,10,25,4,5,C(112,111,83));Rect(p,32,48,19,25,4,5,C(112,111,83));Rect(p,32,48,11,26,2,2,C(178,146,85));Rect(p,32,48,20,26,2,2,C(178,146,85));}
+                if(hazmat){Rect(p,32,48,9,19,14,14,C(192,153,42));Rect(p,32,48,15,20,2,12,C(236,198,78));Rect(p,32,48,4,22+arm,3,9,C(192,153,42));Rect(p,32,48,25,22-arm,3,9,C(192,153,42));Rect(p,32,48,12,27,8,3,C(228,193,78));Rect(p,32,48,10,22,2,8,C(80,115,107));Rect(p,32,48,20,22,2,8,C(80,115,107));}
                 // Neck, face in profile and swept hair.
                 Rect(p,32,48,13,32,7,4,skin);Rect(p,32,48,10,35,13,10,outline);Rect(p,32,48,11,36,11,8,skin);
                 Rect(p,32,48,10,43,12,4,hair);Rect(p,32,48,9,41,4,5,hair);Rect(p,32,48,19,43,3,3,hair);
                 Rect(p,32,48,19,39,2,2,hostile?C(232,83,37):C(46,44,35));Rect(p,32,48,22,38,2,2,skin);
                 Rect(p,32,48,9,37,2,3,hostile?C(73,81,64):C(143,105,75));
-                if(pack){Rect(p,32,48,25,18,5,15,outline);Rect(p,32,48,26,19,3,12,hostile?C(60,73,60):C(105,94,66));Rect(p,32,48,26,27,4,2,C(153,129,80));Rect(p,32,48,25,18,2,3,C(56,67,54));}
+                if(pack){Rect(p,32,48,2,18,8,17,outline);Rect(p,32,48,3,20,6,13,hostile?C(60,73,60):C(105,94,66));Rect(p,32,48,3,28,6,2,C(153,129,80));Rect(p,32,48,4,23,4,4,C(77,87,64));Rect(p,32,48,5,24,2,2,C(174,147,88));Rect(p,32,48,9,20,2,11,C(151,131,87));Rect(p,32,48,4,18,4,2,C(57,67,54));}
                 if(helmet){Rect(p,32,48,8,43,16,3,C(79,87,67));Rect(p,32,48,10,45,12,2,C(127,119,69));Rect(p,32,48,10,46,10,2,C(148,139,83));Rect(p,32,48,19,45,5,2,C(80,89,68));Rect(p,32,48,21,45,3,2,C(230,192,70));}
                 if(hazmat){Rect(p,32,48,9,35,15,11,C(191,151,42));Rect(p,32,48,17,37,7,5,C(54,64,57));Rect(p,32,48,21,35,4,3,C(135,143,119));Rect(p,32,48,18,34,6,3,C(121,125,100));}
                 if(frame==2){Rect(p,32,48,12,13,6,3,trousers);Rect(p,32,48,18,13,7,3,trousers);}
@@ -105,7 +111,32 @@ namespace Subsistence
         public static Sprite WallTile(int theme)
         {
             string key="wall_tile_"+theme;if(cache.TryGetValue(key,out var found))return found;
-            Color32 paper=theme==0?C(91,96,60):theme==1?C(70,80,67):theme==2?C(43,70,66):C(56,65,59);
+            if(theme==0)
+            {
+                var wallpaper=Build(key,32,32,p=>
+                {
+                    Rect(p,32,32,0,0,32,32,C(190,173,108));
+                    Rect(p,32,32,0,0,32,2,C(164,145,82));Rect(p,32,32,0,30,32,2,C(172,153,91));
+                    for(int x=3;x<32;x+=8)
+                    {
+                        Rect(p,32,32,x,0,1,32,C(163,144,82));Rect(p,32,32,x+1,0,1,32,C(207,189,121));
+                        for(int y=3;y<32;y+=10)
+                        {
+                            Rect(p,32,32,x-1,y+2,4,3,C(190,170,101));Rect(p,32,32,x,y,2,3,C(204,184,115));
+                            Rect(p,32,32,x-2,y+2,2,1,C(140,124,75));Rect(p,32,32,x+2,y+2,2,1,C(140,124,75));
+                            Rect(p,32,32,x-1,y+4,2,2,C(151,135,79));Rect(p,32,32,x+1,y+4,2,2,C(151,135,79));
+                            Rect(p,32,32,x,y+2,1,2,C(219,196,125));
+                        }
+                    }
+                    // Uneven age stains and tiny torn-paper marks keep the repeating floral print from looking clean or tiled.
+                    Rect(p,32,32,1,9,2,5,C(137,122,72));Rect(p,32,32,2,11,3,1,C(201,178,105));
+                    Rect(p,32,32,24,1,3,2,C(139,124,72));Rect(p,32,32,26,2,1,3,C(146,130,75));
+                    Rect(p,32,32,14,19,2,1,C(133,120,73));Rect(p,32,32,15,20,1,3,C(134,119,72));
+                    Rect(p,32,32,5,28,2,1,C(203,182,112));Rect(p,32,32,6,27,1,2,C(203,182,112));
+                },new Vector2(.5f,.5f),16f);
+                cache[key]=wallpaper;return wallpaper;
+            }
+            Color32 paper=theme==1?C(70,80,67):theme==2?C(43,70,66):C(56,65,59);
             Color32 tileLight=theme==0?C(123,119,70):theme==1?C(94,105,83):theme==2?C(65,91,82):C(83,91,78);
             Color32 grout=theme==0?C(39,47,35):C(29,41,37);
             var sprite=Build(key,32,32,p=>
@@ -130,7 +161,29 @@ namespace Subsistence
         public static Sprite FloorTile(int theme)
         {
             string key="floor_tile_"+theme;if(cache.TryGetValue(key,out var found))return found;
-            Color32 baseColor=theme==0?C(72,61,39):theme==1?C(57,64,55):theme==2?C(34,55,53):C(42,51,49);
+            if(theme==0)
+            {
+                var carpet=Build(key,32,16,p=>
+                {
+                    Rect(p,32,16,0,0,32,16,C(141,121,74));
+                    Rect(p,32,16,0,0,32,2,C(157,136,84));Rect(p,32,16,0,14,32,2,C(101,84,50));
+                    for(int y=2;y<14;y+=3)Rect(p,32,16,0,y,32,1,(y%2==0)?C(151,130,79):C(123,105,67));
+                    for(int x=2;x<32;x+=5)
+                    {
+                        Rect(p,32,16,x,3,1,2,C(148,119,65));Rect(p,32,16,x+1,6,1,1,C(74,65,43));
+                        Rect(p,32,16,x+2,9,1,2,C(135,107,59));Rect(p,32,16,x-1,12,2,1,C(86,74,45));
+                    }
+                    // Dark damp patches, scattered carpet fibers, and dull amber reflections.
+                    Rect(p,32,16,3,7,7,3,C(79,72,46));Rect(p,32,16,5,6,4,1,C(85,78,49));
+                    Rect(p,32,16,4,8,4,1,C(64,69,49));Rect(p,32,16,7,9,3,1,C(145,119,68));
+                    Rect(p,32,16,20,3,5,2,C(89,79,48));Rect(p,32,16,21,5,8,2,C(73,70,49));
+                    Rect(p,32,16,23,6,5,1,C(126,115,70));Rect(p,32,16,24,7,3,1,C(55,67,51));
+                    Rect(p,32,16,11,12,4,1,C(151,121,66));Rect(p,32,16,15,10,2,1,C(62,67,48));
+                    Rect(p,32,16,28,12,3,1,C(136,108,60));
+                },new Vector2(.5f,.5f),16f);
+                cache[key]=carpet;return carpet;
+            }
+            Color32 baseColor=theme==1?C(57,64,55):theme==2?C(34,55,53):C(42,51,49);
             var sprite=Build(key,32,16,p=>
             {
                 Rect(p,32,16,0,0,32,16,baseColor);
@@ -143,16 +196,60 @@ namespace Subsistence
             },new Vector2(.5f,.5f),16f);
             cache[key]=sprite;return sprite;
         }
-        public static Sprite CeilingTile()
+        public static Sprite CeilingTile(int theme=3)
         {
-            const string key="ceiling_tile";if(cache.TryGetValue(key,out var found))return found;
+            string key="ceiling_tile_"+theme;if(cache.TryGetValue(key,out var found))return found;
             var sprite=Build(key,32,16,p=>
             {
-                Rect(p,32,16,0,0,32,16,C(40,52,48));Rect(p,32,16,0,0,32,1,C(17,26,24));Rect(p,32,16,0,15,32,1,C(17,26,24));
-                Rect(p,32,16,0,0,1,16,C(17,26,24));Rect(p,32,16,31,0,1,16,C(17,26,24));
-                Rect(p,32,16,14,0,2,16,C(25,38,35));Rect(p,32,16,3,5,4,2,C(67,78,64));Rect(p,32,16,5,6,1,1,C(138,75,44));
-                Rect(p,32,16,21,3,7,1,C(48,62,54));Rect(p,32,16,23,10,4,2,C(31,42,38));
+                if(theme==0)
+                {
+                    Rect(p,32,16,0,0,32,16,C(177,169,131));Rect(p,32,16,0,0,32,1,C(103,98,77));Rect(p,32,16,0,15,32,1,C(110,104,80));
+                    Rect(p,32,16,0,0,1,16,C(112,105,80));Rect(p,32,16,31,0,1,16,C(98,94,74));
+                    Rect(p,32,16,15,0,2,16,C(129,121,91));Rect(p,32,16,1,7,30,2,C(146,138,106));
+                    Rect(p,32,16,3,3,8,1,C(197,188,150));Rect(p,32,16,20,11,8,1,C(197,188,150));
+                    Rect(p,32,16,6,4,1,2,C(111,107,84));Rect(p,32,16,24,10,1,2,C(116,109,84));
+                    Rect(p,32,16,2,12,4,2,C(149,140,105));Rect(p,32,16,25,2,5,2,C(139,131,98));
+                }
+                else
+                {
+                    Rect(p,32,16,0,0,32,16,C(40,52,48));Rect(p,32,16,0,0,32,1,C(17,26,24));Rect(p,32,16,0,15,32,1,C(17,26,24));
+                    Rect(p,32,16,0,0,1,16,C(17,26,24));Rect(p,32,16,31,0,1,16,C(17,26,24));
+                    Rect(p,32,16,14,0,2,16,C(25,38,35));Rect(p,32,16,3,5,4,2,C(67,78,64));Rect(p,32,16,5,6,1,1,C(138,75,44));
+                    Rect(p,32,16,21,3,7,1,C(48,62,54));Rect(p,32,16,23,10,4,2,C(31,42,38));
+                }
             },new Vector2(.5f,.5f),16f);
+            cache[key]=sprite;return sprite;
+        }
+
+        public static Sprite ManilaWallTile()
+        {
+            const string key="manila_wall_tile";if(cache.TryGetValue(key,out var found))return found;
+            var sprite=Build(key,32,32,p=>
+            {
+                Rect(p,32,32,0,0,32,32,C(186,168,121));
+                Rect(p,32,32,0,0,32,1,C(146,128,92));Rect(p,32,32,0,31,32,1,C(151,133,96));
+                for(int y=4;y<32;y+=8)
+                {
+                    Rect(p,32,32,3,y,25,1,C(202,184,134));Rect(p,32,32,6,y+2,2,1,C(151,132,93));
+                    Rect(p,32,32,11,y+3,1,2,C(165,145,102));Rect(p,32,32,22,y+1,2,2,C(208,189,139));
+                    Rect(p,32,32,26,y+3,1,1,C(137,120,86));
+                }
+                Rect(p,32,32,8,7,3,2,C(203,183,129));Rect(p,32,32,19,24,4,2,C(157,137,99));
+                Rect(p,32,32,2,17,2,5,C(168,149,108));Rect(p,32,32,28,11,2,4,C(174,154,111));
+            },new Vector2(.5f,.5f),16f);
+            cache[key]=sprite;return sprite;
+        }
+
+        public static Sprite WallOutlet()
+        {
+            const string key="level0_wall_outlet";if(cache.TryGetValue(key,out var found))return found;
+            var sprite=Build(key,24,16,p=>
+            {
+                Rect(p,24,16,3,2,18,12,C(113,94,56));Rect(p,24,16,4,1,16,12,C(205,187,137));
+                Rect(p,24,16,6,3,12,8,C(185,165,113));Rect(p,24,16,8,5,2,4,C(54,54,43));Rect(p,24,16,14,5,2,4,C(54,54,43));
+                Rect(p,24,16,9,5,1,2,C(226,210,165));Rect(p,24,16,15,5,1,2,C(226,210,165));
+                Rect(p,24,16,11,10,2,1,C(111,93,56));Rect(p,24,16,5,2,2,1,C(231,214,167));
+            },new Vector2(.5f,.5f),64f);
             cache[key]=sprite;return sprite;
         }
         public static Sprite BunkerDoor()
@@ -174,6 +271,21 @@ namespace Subsistence
                 Rect(p,64,96,7,91,50,5,C(23,30,27));
             },new Vector2(.5f,0),32f);
             cache[key]=sprite;return sprite;
+        }
+        public static Sprite TraderSprite()
+        {
+            var sprite=AtlasSlice("corridor_trader",200,10,32,48,32f);
+            return sprite!=null?sprite:Survivor(0);
+        }
+        public static Sprite ElevatorDoor(bool open)
+        {
+            var sprite=AtlasSlice(open?"elevator_open":"elevator_closed",open?280:236,8,42,64,28f);
+            return sprite!=null?sprite:BunkerDoor();
+        }
+        public static Sprite GreenAccessCard()
+        {
+            var sprite=AtlasSlice("green_access_card",333,27,19,27,48f);
+            return sprite!=null?sprite:ItemSprite(ItemId.Keycard);
         }
         public static Sprite WarningPlacard(int theme)
         {

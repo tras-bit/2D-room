@@ -15,7 +15,7 @@ namespace Subsistence
         public void Initialize(int tier,string displayName)
         {
             if(initialized)return;initialized=true;Tier=Mathf.Clamp(tier,1,3);DisplayName=displayName;
-            var trigger=GetComponent<BoxCollider2D>();if(trigger==null)trigger=gameObject.AddComponent<BoxCollider2D>();trigger.isTrigger=false;trigger.size=new Vector2(1.2f,1.0f);trigger.offset=new Vector2(0,.5f);
+            var trigger=GetComponent<BoxCollider2D>();if(trigger==null)trigger=gameObject.AddComponent<BoxCollider2D>();trigger.isTrigger=true;trigger.size=new Vector2(1.2f,1.0f);trigger.offset=new Vector2(0,.5f);
             var renderer=GetComponent<SpriteRenderer>();if(renderer==null)renderer=gameObject.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Crate2D(Tier);renderer.sortingOrder=7;
             FillLoot();
         }
@@ -45,12 +45,11 @@ namespace Subsistence
             else
             {
                 Put(ItemId.MetalFragments,rng.Next(20,45));Put(ItemId.Scrap,rng.Next(35,71));Put(ItemId.RifleAmmo,rng.Next(14,32));Put(ItemId.Medkit,rng.Next(1,3));
-                Put(ItemId.WorkbenchII,1);Put(ItemId.Keycard,1);
+                Put(ItemId.WorkbenchII,1);
                 if(rng.NextDouble()<.80)Put(ItemId.Rifle,1);
                 if(rng.NextDouble()<.72)Put(ItemId.ArmorVest,1);
                 if(rng.NextDouble()<.60)Put(ItemId.HazmatSuit,1);
                 if(rng.NextDouble()<.70)Put(ItemId.Helmet,1);
-                if(rng.NextDouble()<.60)Put(ItemId.Keycard,1);
                 if(rng.NextDouble()<.65)Put(ItemId.CircuitBoard,rng.Next(3,8));
             }
         }

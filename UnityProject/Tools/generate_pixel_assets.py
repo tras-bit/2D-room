@@ -77,7 +77,7 @@ def text(c,x,y,value,color,scale=1):
 
 def models_sheet():
     """Individual sprite models for editing in Piskel; the reference stays style-only."""
-    c=Canvas(192,80,(0,0,0,0))
+    c=Canvas(384,96,(0,0,0,0))
 
     # 01 · stranded maintenance survivor — layered boots, field jacket, pack and face.
     x=4;y=10
@@ -148,6 +148,45 @@ def models_sheet():
     c.rect(x+2,y,19,3,INK);c.rect(x+4,y+2,15,4,STEEL)
     c.rect(x+6,y+6,11,2,AMBER);c.rect(x+8,y+8,7,2,GLOW)
     c.rect(x+10,y+10,3,5,RUST);c.rect(x+8,y+14,7,2,STEEL)
+
+    # 06 · corridor trader — layered coat, hood, pack and a green deal marker.
+    x=200;y=10
+    c.rect(x+5,y+44,22,2,INK);c.rect(x+8,y+42,6,3,STEEL);c.rect(x+19,y+42,6,3,STEEL)
+    c.rect(x+7,y+26,7,17,DEEP);c.rect(x+17,y+26,7,17,DEEP)
+    c.rect(x+8,y+28,5,13,(72,84,66,255));c.rect(x+18,y+28,4,13,(65,78,61,255))
+    c.rect(x+5,y+14,22,16,DEEP);c.rect(x+7,y+16,18,12,(67,83,63,255))
+    c.rect(x+4,y+16,5,13,INK);c.rect(x+24,y+16,5,13,INK)
+    c.rect(x+9,y+17,3,10,(133,91,59,255));c.rect(x+21,y+17,3,10,(110,76,51,255))
+    c.rect(x+12,y+11,8,5,(170,128,91,255));c.rect(x+9,y+4,15,10,DEEP)
+    c.rect(x+10,y+5,13,7,(178,137,99,255));c.rect(x+8,y+3,17,4,STEEL)
+    c.rect(x+11,y+8,10,3,(57,43,34,255));c.rect(x+19,y+8,2,2,CREAM)
+    c.rect(x+7,y+21,19,3,RUST);c.rect(x+22,y+23,4,7,(105,77,46,255))
+    c.rect(x+23,y+19,4,4,(57,128,74,255));c.rect(x+24,y+20,2,2,(142,199,106,255))
+
+    # 07 · paired side-view elevator-door states: closed steel leaves, then the open bay.
+    x=236;y=8
+    c.rect(x+2,y,38,64,INK);c.rect(x+5,y+3,32,58,STEEL);c.rect(x+7,y+5,28,54,RUST)
+    c.rect(x+9,y+7,24,50,(34,44,38,255));c.rect(x+10,y+9,11,46,(79,91,72,255))
+    c.rect(x+22,y+9,10,46,(65,79,65,255));c.rect(x+20,y+9,2,46,DEEP)
+    c.rect(x+12,y+14,6,2,CONCRETE_L);c.rect(x+24,y+14,5,2,CONCRETE_L)
+    c.rect(x+12,y+47,6,2,STEEL);c.rect(x+24,y+47,5,2,STEEL)
+    c.rect(x+34,y+26,2,10,(86,177,91,255));c.rect(x+35,y+27,1,4,(177,222,122,255))
+    for yy in (12,25,39,53,58):c.px(x+6,yy,CREAM);c.px(x+36,yy,CREAM)
+
+    x=280;y=8
+    c.rect(x+2,y,38,64,INK);c.rect(x+5,y+3,32,58,STEEL);c.rect(x+7,y+5,28,54,RUST)
+    c.rect(x+13,y+8,16,48,INK);c.rect(x+15,y+10,12,43,DEEP)
+    c.rect(x+8,y+8,5,48,(76,89,71,255));c.rect(x+29,y+8,5,48,(68,82,67,255))
+    c.rect(x+9,y+11,2,40,CONCRETE_L);c.rect(x+31,y+11,2,40,CONCRETE_L)
+    c.rect(x+16,y+15,10,1,STEEL);c.rect(x+16,y+50,10,2,AMBER)
+    c.rect(x+34,y+26,2,10,(86,177,91,255));c.rect(x+35,y+27,1,4,(177,222,122,255))
+    for yy in (12,25,39,53,58):c.px(x+6,yy,CREAM);c.px(x+36,yy,CREAM)
+
+    # 08 · green access card, shown separately for readable UI/world pickup art.
+    x=333;y=27
+    c.rect(x,y,19,27,INK);c.rect(x+2,y+2,15,23,(47,115,69,255))
+    c.rect(x+4,y+4,11,3,(118,173,92,255));c.rect(x+4,y+10,10,2,(36,76,51,255))
+    c.rect(x+4,y+15,8,2,(36,76,51,255));c.rect(x+13,y+19,2,3,(193,179,117,255))
 
     return c
 

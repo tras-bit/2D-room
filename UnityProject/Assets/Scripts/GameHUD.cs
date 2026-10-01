@@ -14,13 +14,10 @@ namespace Subsistence
         Texture2D lightTex,lightHover,darkTex,darkHover,slotTex,slotHover,selectedTex;
         Font uiFont;
         readonly Color ink=new Color(.94f,.93f,.86f),lime=new Color(.82f,.90f,.58f),muted=new Color(.72f,.72f,.64f),gold=new Color(.82f,.69f,.43f),copper=new Color(.77f,.36f,.18f);
-        float uiScale,uiScaleSetting=.94f,brightnessSetting=.5f;ScreenMode returnMode=ScreenMode.MainMenu;bool fullscreen=true,craftTab,showInteractionHints=true,showNotices=true;int selectedSector,settingsTab,qualityIndex,vSyncSetting=1,resolutionIndex;
+        float uiScale,uiScaleSetting=.94f,brightnessSetting=.5f;ScreenMode returnMode=ScreenMode.MainMenu;bool fullscreen=true,craftTab,showInteractionHints=true,showNotices=true;int settingsTab,qualityIndex,vSyncSetting=1,resolutionIndex;
         CharacterPreview preview;InventorySystem bag;ItemStack held;int selectedKind=-1,selectedIndex=-1;
         Texture2D menuBackdrop,settingsBackdrop;
         Resolution[] resolutions;
-        string[] sectorNames={"ВЛОЖЕННЫЙ СЕКТОР #01","ОФИСНЫЙ ЛАБИРИНТ","ЗАТОПЛЕННЫЙ КОРПУС","ТЕХНИЧЕСКИЙ СЕКТОР"};
-        string[] sectorInfo={"Жёлтые комнаты · низкий риск · базовые припасы","Пустые рабочие места · ресурсы и первые следы","Влажные коридоры · электроника · высокий риск","Оружейный тайник · броня · критический риск"};
-        float[] sectorStarts={-19f,9f,39f,69f};
 
         void Awake()
         {
@@ -108,11 +105,11 @@ namespace Subsistence
             DrawGameLogo(R(x+5*uiScale,y+20*uiScale,43*uiScale,43*uiScale));
             Label("SUBSISTENCE",R(x+62*uiScale,y+14*uiScale,w-70*uiScale,48*uiScale),title,ink);
             Label("ВЫЖИВАНИЕ  /  BACKROOMS",R(x+64*uiScale,y+62*uiScale,w-70*uiScale,20*uiScale),tiny,muted);
-            Label("СЕКТОР 09  /  СИГНАЛ НЕСТАБИЛЕН",R(x+5*uiScale,y+120*uiScale,w-10*uiScale,20*uiScale),mono,ink);
+            Label("LEVEL 0  /  ТОЧКА ВХОДА",R(x+5*uiScale,y+120*uiScale,w-10*uiScale,20*uiScale),mono,ink);
             DrawRule(x+5*uiScale,y+151*uiScale,w-18*uiScale);
             float bx=x+5*uiScale,bw=w-20*uiScale;
             DrawMenuAction("НАЧАТЬ ИГРУ","ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(bx,y+178*uiScale,bw,74*uiScale),()=>SetMode(ScreenMode.ServerSelect));
-            DrawMenuOption("01","ВЫБОР СЕКТОРА","ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(bx,y+273*uiScale,bw,57*uiScale),()=>SetMode(ScreenMode.ServerSelect));
+            DrawMenuOption("01","ВЫБОР УРОВНЯ","ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(bx,y+273*uiScale,bw,57*uiScale),()=>SetMode(ScreenMode.ServerSelect));
             DrawMenuOption("02","НАСТРОЙКИ","ИЗОБРАЖЕНИЕ И УПРАВЛЕНИЕ",R(bx,y+339*uiScale,bw,57*uiScale),()=>{returnMode=ScreenMode.MainMenu;SetMode(ScreenMode.Settings);});
             DrawMenuOption("03","ПОДДЕРЖКА","ПОМОЩЬ И СВЯЗЬ",R(bx,y+405*uiScale,bw,57*uiScale),()=>SetMode(ScreenMode.Support));
             DrawMenuOption("04","ВЫЙТИ","ЗАВЕРШИТЬ СЕАНС",R(bx,y+471*uiScale,bw,57*uiScale),()=>Application.Quit());
@@ -171,57 +168,54 @@ namespace Subsistence
         }
         void DrawSectorSelect()
         {
-            DrawBackdrop();float panelW=Screen.width*.95f,panelH=Screen.height*.93f;Rect r=CenteredPanel(panelW,panelH);Panel(r,new Color(.025f,.029f,.024f,.78f));
-            Label("SUBSISTENCE  /  ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(r.x+28*uiScale,r.y+20*uiScale,r.width-56*uiScale,17*uiScale),tiny,muted);
-            Label("ВЫБОР СЕКТОРА",R(r.x+27*uiScale,r.y+48*uiScale,r.width*.65f,44*uiScale),title,ink);
-            Label("ВЫБЕРИ ЗОНУ ДЛЯ ОДИНОЧНОЙ ЭКСПЕДИЦИИ",R(r.x+30*uiScale,r.y+99*uiScale,r.width*.65f,18*uiScale),mono,muted);
-            float netW=Mathf.Min(280*uiScale,r.width*.30f);Rect net=R(r.x+r.width-netW-30*uiScale,r.y+30*uiScale,netW,49*uiScale);Panel(net,new Color(.05f,.055f,.045f,.88f));
+            DrawBackdrop();
+            Rect r=CenteredPanel(Screen.width*.94f,Screen.height*.92f);
+            Panel(r,new Color(.025f,.029f,.024f,.78f));
+            Label("SUBSISTENCE  /  ЛОКАЛЬНЫЙ РЕЖИМ",R(r.x+28*uiScale,r.y+20*uiScale,r.width*.65f,17*uiScale),tiny,muted);
+            Label("ВЫБОР УРОВНЯ",R(r.x+27*uiScale,r.y+48*uiScale,r.width*.60f,44*uiScale),title,ink);
+            Label("LEVEL 0 · THE LOBBY · ЛОКАЛЬНЫЙ SIDE VIEW",R(r.x+30*uiScale,r.y+99*uiScale,r.width*.62f,18*uiScale),mono,muted);
+            float netW=Mathf.Min(280*uiScale,r.width*.30f);
+            Rect net=R(r.x+r.width-netW-30*uiScale,r.y+30*uiScale,netW,49*uiScale);
+            Panel(net,new Color(.05f,.055f,.045f,.88f));
             Label("●  СЕТЬ ОФФЛАЙН",R(net.x+12*uiScale,net.y+6*uiScale,net.width-24*uiScale,17*uiScale),mono,gold);
             Label("ТОЛЬКО ЛОКАЛЬНАЯ ИГРА",R(net.x+12*uiScale,net.y+27*uiScale,net.width-24*uiScale,13*uiScale),tiny,muted);
             DrawRule(r.x+28*uiScale,r.y+127*uiScale,r.width-56*uiScale);
-            float leftX=r.x+25*uiScale,leftW=r.width*.225f,listX=leftX+leftW+19*uiScale,listW=r.x+r.width-28*uiScale-listX;
-            Rect filter=R(leftX,r.y+145*uiScale,leftW,Mathf.Min(392*uiScale,r.height*.51f));Panel(filter,new Color(.044f,.049f,.041f,.88f));
-            Label("Ф И Л Ь Т Р Ы",R(filter.x+14*uiScale,filter.y+13*uiScale,filter.width-28*uiScale,22*uiScale),mono,ink);
-            DrawRule(filter.x+13*uiScale,filter.y+44*uiScale,filter.width-26*uiScale);
-            Label("ТИП ПОДКЛЮЧЕНИЯ",R(filter.x+14*uiScale,filter.y+59*uiScale,filter.width-28*uiScale,15*uiScale),tiny,muted);
-            Panel(R(filter.x+13*uiScale,filter.y+82*uiScale,filter.width-26*uiScale,39*uiScale),new Color(.14f,.16f,.12f));
-            Label("ЛОКАЛЬНАЯ ЭКСПЕДИЦИЯ",R(filter.x+24*uiScale,filter.y+93*uiScale,filter.width-48*uiScale,17*uiScale),mono,lime);
-            Label("СЕКТОР",R(filter.x+14*uiScale,filter.y+139*uiScale,filter.width-28*uiScale,15*uiScale),tiny,muted);
-            for(int i=0;i<4;i++)
-            {
-                float yy=filter.y+(166+i*38)*uiScale;Rect fr=R(filter.x+13*uiScale,yy,filter.width-26*uiScale,31*uiScale);Panel(fr,i==selectedSector?new Color(.24f,.11f,.065f):new Color(.065f,.072f,.06f));
-                bool sectorClicked=GUI.Button(fr,GUIContent.none,GUIStyle.none);if(i==selectedSector)DrawRect(R(fr.x,fr.y,3*uiScale,fr.height),copper);
-                Label((i==selectedSector?"●  ":"○  ")+"0"+(i+1)+"  "+ShortSectorName(i),R(fr.x+9*uiScale,fr.y+8*uiScale,fr.width-18*uiScale,15*uiScale),tiny,i==selectedSector?ink:muted);if(sectorClicked)selectedSector=i;
-            }
-            Label("РЕЖИМ",R(filter.x+14*uiScale,filter.y+330*uiScale,filter.width-28*uiScale,14*uiScale),tiny,muted);
-            Label("ОДИНОЧНАЯ ИГРА\nБЕЗ МАТЧМЕЙКИНГА",R(filter.x+14*uiScale,filter.y+350*uiScale,filter.width-28*uiScale,36*uiScale),small,ink);
-            float tableY=r.y+145*uiScale,headH=30*uiScale,rowH=53*uiScale;
-            DrawRect(R(listX,tableY,listW,headH),new Color(.043f,.048f,.04f,.93f));
-            Label("ЛОКАЛЬНЫЙ СЕКТОР",R(listX+14*uiScale,tableY+8*uiScale,listW*.48f,14*uiScale),tiny,muted);
+
+            float top=r.y+145*uiScale,leftX=r.x+25*uiScale,leftW=r.width*.245f;
+            Rect dossier=R(leftX,top,leftW,r.y+r.height-72*uiScale-top);
+            Panel(dossier,new Color(.044f,.049f,.041f,.90f));
+            Label("00  /  ТОЧКА ВХОДА",R(dossier.x+15*uiScale,dossier.y+16*uiScale,dossier.width-30*uiScale,18*uiScale),mono,copper);
+            Label("THE LOBBY",R(dossier.x+15*uiScale,dossier.y+49*uiScale,dossier.width-30*uiScale,28*uiScale),heading,ink);
+            Label("LEVEL 0 · ЖЁЛТЫЕ КОМНАТЫ",R(dossier.x+15*uiScale,dossier.y+82*uiScale,dossier.width-30*uiScale,18*uiScale),mono,lime);
+            DrawRule(dossier.x+15*uiScale,dossier.y+111*uiScale,dossier.width-30*uiScale);
+            Label("ВЛАЖНЫЙ КОВЁР · ГУЛ ЛАМП",R(dossier.x+15*uiScale,dossier.y+130*uiScale,dossier.width-30*uiScale,18*uiScale),mono,ink);
+            Label("Повторяющиеся жёлтые комнаты, потолочные панели, редкие розетки и ложные проходы. Здесь почти нет людей — и нет надёжного маршрута.",R(dossier.x+15*uiScale,dossier.y+157*uiScale,dossier.width-30*uiScale,72*uiScale),small,muted);
+            Label("ПРОХОД ОТКРЫТ",R(dossier.x+15*uiScale,dossier.y+dossier.height-42*uiScale,dossier.width-30*uiScale,18*uiScale),mono,lime);
+
+            float listX=leftX+leftW+20*uiScale,listW=r.x+r.width-28*uiScale-listX;
+            float tableY=top,headH=30*uiScale,rowH=69*uiScale;
+            DrawRect(R(listX,tableY,listW,headH),new Color(.043f,.048f,.04f,.94f));
+            Label("УРОВЕНЬ",R(listX+14*uiScale,tableY+8*uiScale,listW*.47f,14*uiScale),tiny,muted);
             Label("РЕЖИМ",R(listX+listW*.53f,tableY+8*uiScale,listW*.13f,14*uiScale),tiny,muted);
-            Label("РИСК",R(listX+listW*.68f,tableY+8*uiScale,listW*.12f,14*uiScale),tiny,muted);
-            Label("ДОБЫЧА",R(listX+listW*.82f,tableY+8*uiScale,listW*.14f,14*uiScale),tiny,muted);
-            for(int i=0;i<4;i++)
-            {
-                float yy=tableY+headH+i*(rowH+2*uiScale);Rect row=R(listX,yy,listW,rowH);Panel(row,i==selectedSector?new Color(.24f,.105f,.055f,.90f):new Color(.035f,.040f,.034f,.82f));
-                bool clicked=GUI.Button(row,GUIContent.none,GUIStyle.none);if(clicked)selectedSector=i;
-                if(i==selectedSector)DrawRect(R(row.x,row.y,4*uiScale,row.height),copper);
-                DrawRect(R(row.x+14*uiScale,row.y+21*uiScale,8*uiScale,8*uiScale),i<2?lime:gold);
-                Label(sectorNames[i],R(row.x+32*uiScale,row.y+10*uiScale,listW*.47f,19*uiScale),mono,ink);
-                Label("SOLO",R(row.x+listW*.53f,row.y+17*uiScale,listW*.13f,17*uiScale),tiny,muted);
-                Label(i==0?"НИЗКИЙ":i==1?"СРЕДНИЙ":i==2?"ВЫСОКИЙ":"КРИТИЧЕСКИЙ",R(row.x+listW*.68f,row.y+17*uiScale,listW*.14f,17*uiScale),tiny,i<2?lime:gold);
-                Label(i==0?"I":i==1?"I—II":i==2?"II":"III",R(row.x+listW*.84f,row.y+17*uiScale,listW*.11f,17*uiScale),tiny,ink);
-            }
-            float detailY=tableY+headH+4*(rowH+2*uiScale)+19*uiScale;Rect detail=R(listX,detailY,listW,r.y+r.height-72*uiScale-detailY);Panel(detail,new Color(.037f,.043f,.036f,.88f));DrawRect(R(detail.x,detail.y,4*uiScale,detail.height),copper);
-            Label("ВЫБРАННЫЙ СЕКТОР",R(detail.x+19*uiScale,detail.y+12*uiScale,listW*.48f,14*uiScale),tiny,copper);
-            Label(sectorNames[selectedSector],R(detail.x+19*uiScale,detail.y+35*uiScale,listW*.56f,24*uiScale),heading,ink);
-            Label(sectorInfo[selectedSector],R(detail.x+19*uiScale,detail.y+65*uiScale,listW*.61f,33*uiScale),small,muted);
-            Label("СТАТУС\nЛОКАЛЬНО\n\nПИНГ\nНЕ ПРИМЕНИМ\n\nСЕССИЯ\nОДИНОЧНАЯ",R(detail.x+listW*.68f,detail.y+14*uiScale,listW*.27f,detail.height-26*uiScale),tiny,ink);
-            if(Button("НАЧАТЬ ЛОКАЛЬНУЮ ЭКСПЕДИЦИЮ   →",R(detail.x+listW*.62f,detail.y+detail.height-51*uiScale,listW*.36f,39*uiScale),lightButton))StartRun();
-            Label("ОФЛАЙН: СЕКТОРА ЗАПУСКАЮТСЯ ТОЛЬКО ЛОКАЛЬНО",R(leftX,r.y+r.height-42*uiScale,r.width*.60f,15*uiScale),tiny,muted);
-            if(Button("ESC  /  НАЗАД",R(r.x+r.width-160*uiScale,r.y+r.height-48*uiScale,130*uiScale,30*uiScale),darkButton))SetMode(ScreenMode.MainMenu);
+            Label("МАРШРУТ",R(listX+listW*.70f,tableY+8*uiScale,listW*.25f,14*uiScale),tiny,muted);
+            Rect row=R(listX,tableY+headH+2*uiScale,listW,rowH);
+            Panel(row,new Color(.24f,.105f,.055f,.94f));DrawRect(R(row.x,row.y,4*uiScale,row.height),copper);
+            Label("LEVEL 0  ·  THE LOBBY",R(row.x+18*uiScale,row.y+11*uiScale,listW*.48f,20*uiScale),mono,ink);
+            Label("Жёлтый лабиринт / входная зона",R(row.x+18*uiScale,row.y+37*uiScale,listW*.48f,18*uiScale),small,muted);
+            Label("SOLO",R(row.x+listW*.53f,row.y+25*uiScale,listW*.13f,18*uiScale),tiny,lime);
+            Label("2 ЛИФТА",R(row.x+listW*.70f,row.y+25*uiScale,listW*.24f,18*uiScale),tiny,gold);
+
+            float detailY=tableY+headH+rowH+23*uiScale;
+            Rect detail=R(listX,detailY,listW,r.y+r.height-72*uiScale-detailY);
+            Panel(detail,new Color(.037f,.043f,.036f,.89f));DrawRect(R(detail.x,detail.y,4*uiScale,detail.height),copper);
+            Label("ЦЕЛЬ ЭКСПЕДИЦИИ",R(detail.x+18*uiScale,detail.y+14*uiScale,listW*.54f,16*uiScale),tiny,copper);
+            Label("Обыщи редкие тайники, собери Scrap и найди аномальную Manila Room.",R(detail.x+18*uiScale,detail.y+38*uiScale,listW*.56f,42*uiScale),small,ink);
+            Label("Торговец в Manila Room меняет 15 Scrap на зелёную карту для пары лифтов.",R(detail.x+18*uiScale,detail.y+83*uiScale,listW*.59f,30*uiScale),tiny,muted);
+            Label("ПОЕЗДКА: ДВЕРИ ОТКРЫТЫ 15 С · ЛИФТ ЕДЕТ 60 С · LEVEL 1",R(detail.x+18*uiScale,detail.y+119*uiScale,listW*.59f,18*uiScale),mono,lime);
+            if(Button("НАЧАТЬ LEVEL 0   →",R(detail.x+listW*.64f,detail.y+detail.height-49*uiScale,listW*.33f,38*uiScale),lightButton))StartRun();
+            Label("ОФЛАЙН · УРОВНИ ИГРАЮТСЯ ЛОКАЛЬНО",R(leftX,r.y+r.height-43*uiScale,r.width*.58f,16*uiScale),tiny,muted);
+            if(Button("ESC  /  НАЗАД",R(r.x+r.width-160*uiScale,r.y+r.height-49*uiScale,132*uiScale,34*uiScale),darkButton))SetMode(ScreenMode.MainMenu);
         }
-        string ShortSectorName(int i){return i==0?"ВЛОЖЕННЫЙ":i==1?"ОФИС":i==2?"ЗАТОПЛЕННЫЙ":"ТЕХНИЧЕСКИЙ";}
         void DrawBackdrop()
         {
             Rect screen=new Rect(0,0,Screen.width,Screen.height);
@@ -239,11 +233,13 @@ namespace Subsistence
         {
             RunState s=RunState.Instance;var p=FindObjectOfType<PlayerController>();float margin=14*uiScale;
             float panelW=250*uiScale;Panel(R(margin,margin,panelW,65*uiScale),new Color(.035f,.044f,.039f,.91f));
-            int currentSector=p==null?selectedSector:Mathf.Clamp(Mathf.FloorToInt((p.transform.position.x+24f)/30f),0,3);
-            Label("SUBSISTENCE   /   SECTOR 0"+(currentSector+1),R(margin+11*uiScale,margin+8*uiScale,panelW-22*uiScale,15*uiScale),mono,lime);
-            string goal=s.SuppliesFound<3?$"ЯЩИКИ  {s.SuppliesFound} / 3":p!=null&&p.Inventory.Count(ItemId.Keycard)==0?"КАРТА ДОСТУПА  ·  СЕКТОР III":"ВЫХОД  →";
+            int level=s.CurrentLevel;
+            Label("SUBSISTENCE   /   BACKROOMS LEVEL "+level,R(margin+11*uiScale,margin+8*uiScale,panelW-22*uiScale,15*uiScale),mono,lime);
+            int scrap=p!=null&&p.Inventory!=null?p.Inventory.Count(ItemId.Scrap):0;
+            bool hasCard=p!=null&&p.Inventory!=null&&p.Inventory.Count(ItemId.Keycard)>0;
+            string goal=level>=1?"LEVEL 1  ·  ПРОМЗОНА":hasCard?"ЗЕЛЁНАЯ КАРТА  ·  ЛИФТЫ":"SCRAP  "+scrap+" / 15  ·  MANILA ROOM";
             Label(goal,R(margin+11*uiScale,margin+32*uiScale,panelW-22*uiScale,18*uiScale),small,ink);
-            DrawCompass(currentSector);
+            DrawCompass(level);DrawElevatorTimer(margin);
             float rw=180*uiScale;Panel(R(Screen.width-margin-rw,margin,rw,44*uiScale),new Color(.035f,.044f,.039f,.91f));
             float clock=18*60+42+Mathf.FloorToInt(s.ShiftSeconds*1.08f);string time=$"{(clock/60)%24:00}:{clock%60:00}";
             Label("●  "+time+"   /   SHIFT 01",R(Screen.width-margin-rw+9*uiScale,margin+6*uiScale,rw-18*uiScale,15*uiScale),mono,ink);
@@ -252,15 +248,28 @@ namespace Subsistence
             Label("WASD MOVE  ·  E USE  ·  Q ATTACK  ·  H MED",R(margin,Screen.height-25*uiScale,285*uiScale,14*uiScale),tiny,muted);
             if(showNotices&&s.NoticeTime>0){float nw=Mathf.Min(480*uiScale,Screen.width*.72f);Panel(R((Screen.width-nw)/2,Screen.height-190*uiScale,nw,27*uiScale),new Color(.045f,.06f,.046f,.95f));Label(s.Notice,R((Screen.width-nw)/2+10*uiScale,Screen.height-184*uiScale,nw-20*uiScale,16*uiScale),small,ink);}
         }
-        void DrawCompass(int sectorIndex)
+        void DrawCompass(int level)
         {
             float width=250*uiScale,height=42*uiScale,x=(Screen.width-width)/2,y=14*uiScale;
             Panel(R(x,y,width,height),new Color(.035f,.044f,.039f,.88f));
             Label("W  ◄",R(x+8*uiScale,y+8*uiScale,49*uiScale,17*uiScale),mono,muted);
-            Label("SECTOR 0"+(sectorIndex+1),R(x+64*uiScale,y+7*uiScale,width-128*uiScale,18*uiScale),mono,lime);
+            Label("LEVEL "+level,R(x+64*uiScale,y+7*uiScale,width-128*uiScale,18*uiScale),mono,lime);
             Label("►  E",R(x+width-58*uiScale,y+8*uiScale,50*uiScale,17*uiScale),mono,muted);
             DrawRect(R(x+width*.5f-1*uiScale,y+30*uiScale,2*uiScale,7*uiScale),gold);
             for(int i=0;i<9;i++){float tx=x+width*(.12f+i*.095f);DrawRect(R(tx,y+33*uiScale,i==4?2*uiScale:1*uiScale,i==4?7*uiScale:4*uiScale),new Color(.48f,.53f,.43f));}
+        }
+        void DrawElevatorTimer(float margin)
+        {
+            foreach(var elevator in FindObjectsOfType<LevelElevator>())
+            {
+                if(elevator.Phase==LevelElevator.RidePhase.Idle)continue;
+                string phase=elevator.Phase==LevelElevator.RidePhase.Boarding?"CLOSE ":"RIDE ";
+                string text="LIFT "+elevator.ElevatorNumber+"  ·  "+phase+Mathf.CeilToInt(elevator.SecondsRemaining)+" s";
+                float w=280*uiScale;Rect r=R(margin,79*uiScale,w,26*uiScale);
+                Panel(r,new Color(.035f,.044f,.039f,.94f));
+                Label(text,R(r.x+9*uiScale,r.y+5*uiScale,r.width-18*uiScale,16*uiScale),mono,gold);
+                break;
+            }
         }
         void DrawRustVitals(RunState state)
         {
@@ -296,11 +305,12 @@ namespace Subsistence
         }
         string NearestHint(PlayerController player)
         {
-            float best=1.8f;string hint="";
+            float best=2.3f;string hint="";
             foreach(var crate in FindObjectsOfType<LootContainer>()){float d=Vector2.Distance(player.transform.position,crate.transform.position);if(d<best){best=d;hint=crate.GetHint();}}
             foreach(var item in FindObjectsOfType<WorldItem>()){float d=Vector2.Distance(player.transform.position,item.transform.position);if(d<best){best=d;hint=item.Hint;}}
             foreach(var item in FindObjectsOfType<SupplyPickup>()){if(item.Collected)continue;float d=Vector2.Distance(player.transform.position,item.transform.position);if(d<best){best=d;hint="E  ·  ПОДОБРАТЬ ПРИПАС";}}
-            if(Mathf.Abs(player.transform.position.x-RunState.ExitX)<2.5f)return "E  ·  ПРОВЕРИТЬ ВЫХОД";
+            foreach(var trader in FindObjectsOfType<TraderNPC>()){float d=Vector2.Distance(player.transform.position,trader.transform.position);if(d<best){best=d;hint=trader.GetHint(player.Inventory);}}
+            foreach(var elevator in FindObjectsOfType<LevelElevator>()){float d=Vector2.Distance(player.transform.position,elevator.transform.position);if(d<2.3f&&d<best){best=d;hint=elevator.GetHint(player);}}
             return hint;
         }
         void Bar(float x,float y,float width,float value,Color color,string caption)
@@ -568,7 +578,7 @@ namespace Subsistence
         {
             Label("УПРАВЛЕНИЕ",R(r.x+24*uiScale,r.y+17*uiScale,r.width-48*uiScale,25*uiScale),heading,ink);
             string[] keys={"W / A / S / D   ИЛИ   ← →","SPACE / W / ↑","E","Q","F","1 — 6","TAB / I","SHIFT + ЛКМ","ПКМ","ESC"};
-            string[] actions={"Движение по сектору","Прыжок","Открыть ящик · подобрать · проверить выход","Атака / отбить сталкера","Фонарь","Выбрать слот пояса","Инвентарь и экипировка","Быстрый перенос стопки","Разделить стопку / положить одну","Пауза или закрыть окно"};
+            string[] actions={"Движение по коридору","Прыжок","Открыть ящик · подобрать · торговец · лифт","Атака / отбить сталкера","Фонарь","Выбрать слот пояса","Инвентарь и экипировка","Быстрый перенос стопки","Разделить стопку / положить одну","Пауза или закрыть окно"};
             float top=r.y+61*uiScale,row=29*uiScale;
             for(int i=0;i<keys.Length;i++){float yy=top+i*row;Label(keys[i],R(r.x+26*uiScale,yy,r.width*.37f,20*uiScale),mono,gold);Label(actions[i],R(r.x+r.width*.40f,yy,r.width*.56f,20*uiScale),small,ink);}
         }
@@ -628,7 +638,7 @@ namespace Subsistence
             Label("S U B S I S T E N C E  /  FIELD SUPPORT",R(r.x+26*uiScale,r.y+21*uiScale,r.width-52*uiScale,16*uiScale),tiny,muted);
             Label("ПОДДЕРЖКА",R(r.x+25*uiScale,r.y+53*uiScale,r.width-50*uiScale,48*uiScale),title,ink);
             Label("ЭТА СБОРКА РАБОТАЕТ ЛОКАЛЬНО",R(r.x+29*uiScale,r.y+113*uiScale,r.width-58*uiScale,19*uiScale),mono,copper);
-            Label("Сетевой вход и игровые серверы пока не подключены. Все доступные экспедиции запускаются на этом устройстве; список не имитирует онлайн-игроков или пинг.",R(r.x+29*uiScale,r.y+146*uiScale,r.width-58*uiScale,60*uiScale),body,muted);
+            Label("Сетевой вход и игровые серверы пока не подключены. Доступна одна одиночная экспедиция на этом устройстве; игра не имитирует онлайн-игроков или пинг.",R(r.x+29*uiScale,r.y+146*uiScale,r.width-58*uiScale,60*uiScale),body,muted);
             Rect note=R(r.x+27*uiScale,r.y+231*uiScale,r.width-54*uiScale,112*uiScale);Panel(note,new Color(.05f,.06f,.048f));
             Label("ЕСЛИ НУЖНА ПОМОЩЬ",R(note.x+16*uiScale,note.y+14*uiScale,note.width-32*uiScale,19*uiScale),mono,ink);
             Label("Открой вкладку управления для клавиш. Для ошибки запиши шаги, которые к ней привели, и приложи лог Unity Editor после проверки проекта.",R(note.x+16*uiScale,note.y+42*uiScale,note.width-32*uiScale,54*uiScale),small,muted);
@@ -639,14 +649,14 @@ namespace Subsistence
         void DrawEndCard(bool won)
         {
             DrawBackdrop();Rect r=CenteredPanel(500*uiScale,330*uiScale);Panel(r,new Color(.045f,.06f,.05f,.91f));Accent(r.x,r.y,r.height);
-            Label(won?"СЕКТОР ПОКИНУТ":"СМЕНА ЗАВЕРШЕНА",R(r.x+28*uiScale,r.y+32*uiScale,r.width-56*uiScale,50*uiScale),heading,ink);
-            Label(won?"Ты выбрался из этого крыла. В глубине снова загорается свет.":"Сталкер оказался быстрее. Попробуй другой сектор.",R(r.x+30*uiScale,r.y+99*uiScale,r.width-60*uiScale,55*uiScale),body,muted);
+            Label(won?"ПЕРЕХОД ЗАВЕРШЁН":"СМЕНА ЗАВЕРШЕНА",R(r.x+28*uiScale,r.y+32*uiScale,r.width-56*uiScale,50*uiScale),heading,ink);
+            Label(won?"Ты достиг следующего коридора.":"Сталкер оказался быстрее. Попробуй снова.",R(r.x+30*uiScale,r.y+99*uiScale,r.width-60*uiScale,55*uiScale),body,muted);
             if(Button("НАЧАТЬ СНОВА",R(r.x+30*uiScale,r.y+188*uiScale,r.width-60*uiScale,40*uiScale),lightButton))StartRun();if(Button("ГЛАВНОЕ МЕНЮ",R(r.x+30*uiScale,r.y+240*uiScale,r.width-60*uiScale,40*uiScale),darkButton))SetMode(ScreenMode.MainMenu);
         }
         void StartRun()
         {
-            RunState.Instance.ResetForNewRun();var player=FindObjectOfType<PlayerController>();if(player!=null)player.ResetForNewRun(sectorStarts[selectedSector]);
-            foreach(var watcher in FindObjectsOfType<WatcherAI>())watcher.ResetForNewRun();foreach(var crate in FindObjectsOfType<LootContainer>())crate.ResetForNewRun();
+            RunState.Instance.ResetForNewRun();var player=FindObjectOfType<PlayerController>();if(player!=null)player.ResetForNewRun(-19f);
+            foreach(var watcher in FindObjectsOfType<WatcherAI>())watcher.ResetForNewRun();foreach(var crate in FindObjectsOfType<LootContainer>())crate.ResetForNewRun();foreach(var elevator in FindObjectsOfType<LevelElevator>())elevator.ResetForNewRun();
             bag=player!=null?player.Inventory:null;if(preview!=null&&bag!=null)preview.SetGear(bag.Gear);held.Clear();selectedKind=-1;SetMode(ScreenMode.Playing);AudioDirector.Instance?.Play("ui",.7f);
         }
         void SetMode(ScreenMode next)

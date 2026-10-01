@@ -11,8 +11,8 @@ namespace Subsistence
         InventorySystem inventory;
         CharacterVisual2D character;
         SpriteRenderer beamRenderer;
-        bool grounded,flashlightOn=true;
-        float invulnerable,attackCooldown,footstepClock,horizontal;
+        bool grounded,flashlightOn=true,insideElevator;
+        float invulnerable,attackCooldown,footstepClock,horizontal,elevatorMinX,elevatorMaxX;
         int facing=1;
         public bool FlashlightOn=>flashlightOn;
         public InventorySystem Inventory=>inventory;
@@ -34,7 +34,7 @@ namespace Subsistence
         {
             if(RunState.Instance==null||!GameHUD.IsPlaying||RunState.Instance.IsDead||RunState.Instance.HasEscaped)return;
             horizontal=Input.GetAxisRaw("Horizontal");
-            if(Input.GetKeyDown(KeyCode.Space)||Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow))
+            if(!insideElevator&&(Input.GetKeyDown(KeyCode.Space)||Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)))
                 if(grounded){body.velocity=new Vector2(body.velocity.x,JumpVelocity);grounded=false;}
             if(Input.GetKeyDown(KeyCode.E))Interact();
             if(Input.GetKeyDown(KeyCode.Q)&&attackCooldown<=0)Attack();
@@ -62,6 +62,12 @@ namespace Subsistence
         void FixedUpdate()
         {
             if(RunState.Instance==null||!GameHUD.IsPlaying||RunState.Instance.IsDead||RunState.Instance.HasEscaped){body.velocity=new Vector2(0,body.velocity.y);return;}
+            if(insideElevator)
+            {
+                float nextX=body.position.x+horizontal*MoveSpeed*Time.fixedDeltaTime;
+                body.velocity=Vector2.zero;body.MovePosition(new Vector2(Mathf.Clamp(nextX,elevatorMinX,elevatorMaxX),body.position.y));
+                return;
+            }
             body.velocity=new Vector2(horizontal*MoveSpeed,body.velocity.y);
             if(transform.position.x<-23f)body.position=new Vector2(-23f,body.position.y);
         }
@@ -82,7 +88,14 @@ namespace Subsistence
             foreach(var p in FindObjectsOfType<SupplyPickup>())
             {float d=Vector2.Distance(transform.position,p.transform.position);if(!p.Collected&&d<best){best=d;pickup=p;}}
             if(pickup!=null){pickup.Collect();return;}
-            if(Mathf.Abs(transform.position.x-RunState.ExitX)<2.5f){RunState.Instance.CheckExit(transform.position.x);return;}
+            TraderNPC trader=null;best=1.9f;
+            foreach(var candidate in FindObjectsOfType<TraderNPC>())
+            {float d=Vector2.Distance(transform.position,candidate.transform.position);if(d<best){best=d;trader=candidate;}}
+            if(trader!=null){trader.Interact(inventory);return;}
+            LevelElevator elevator=null;best=2.15f;
+            foreach(var candidate in FindObjectsOfType<LevelElevator>())
+            {float d=Vector2.Distance(transform.position,candidate.transform.position);if(d<best){best=d;elevator=candidate;}}
+            if(elevator!=null){elevator.TryUse(this);return;}
             RunState.Instance.Notify("Здесь больше ничего нет.",1.1f);
         }
         void Attack()
@@ -111,10 +124,19 @@ namespace Subsistence
             flashlightOn=!flashlightOn;if(beamRenderer!=null)beamRenderer.enabled=flashlightOn;
             AudioDirector.Instance?.Play("ui",.45f);RunState.Instance.Notify(flashlightOn?"Фонарь включён.":"Фонарь выключен.",1.4f);
         }
+        public void EnterElevator(float centerX,float halfWidth)
+        {
+            insideElevator=true;elevatorMinX=centerX-halfWidth;elevatorMaxX=centerX+halfWidth;
+            horizontal=0;body.velocity=Vector2.zero;body.position=new Vector2(centerX,0);transform.position=new Vector3(centerX,0,0);grounded=true;
+        }
+        public void ExitElevator(Vector2 destination)
+        {
+            insideElevator=false;horizontal=0;body.velocity=Vector2.zero;body.position=destination;transform.position=new Vector3(destination.x,destination.y,0);grounded=true;
+        }
         public void ResetForNewRun()=>ResetForNewRun(-19f);
         public void ResetForNewRun(float startX)
         {
-            transform.position=new Vector3(startX,0,0);body.velocity=Vector2.zero;grounded=false;horizontal=0;invulnerable=0;attackCooldown=0;footstepClock=0;facing=1;flashlightOn=true;
+            insideElevator=false;transform.position=new Vector3(startX,0,0);body.velocity=Vector2.zero;grounded=false;horizontal=0;invulnerable=0;attackCooldown=0;footstepClock=0;facing=1;flashlightOn=true;
             if(beamRenderer!=null){beamRenderer.enabled=true;beamRenderer.flipX=false;}
             if(inventory!=null){inventory.BeginRun();character?.SetGear(inventory.Gear);}
         }

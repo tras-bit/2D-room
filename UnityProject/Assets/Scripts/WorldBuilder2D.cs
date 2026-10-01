@@ -2,121 +2,187 @@ using UnityEngine;
 
 namespace Subsistence
 {
-    /// <summary>Builds the whole playable world from crisp pixel sprites and 2D colliders only.</summary>
+    /// <summary>Builds the yellow, non-linear-feeling Level 0 lobby and its industrial Level 1 destination in strict 2D.</summary>
     public static class WorldBuilder2D
     {
-        static readonly float[] starts={-24f,6f,36f,66f};
-        const float SectorLength=30f;
+        public const float Level0Start=-24f,Level0End=96f,Level1Start=112f,Level1End=232f;
+        const float SegmentLength=30f;
 
         public static void Build(Transform parent)
         {
-            for(int sector=0;sector<4;sector++)BuildSector(parent,starts[sector],sector);
-            var ground=new GameObject("Continuous 2D floor collision");ground.transform.SetParent(parent,false);ground.transform.position=new Vector3(36f,-.26f,0);
-            var groundCollider=ground.AddComponent<BoxCollider2D>();groundCollider.size=new Vector2(120f,.52f);
-            BuildDoorway(parent,6f,1);BuildDoorway(parent,36f,2);BuildDoorway(parent,66f,3);
-            BuildBackgroundDecor(parent);
+            BuildLevelZero(parent);
+            BuildIndustrialLevel(parent,Level1Start,1);
+            BuildBoundary(parent,Level0End,"Level 0 anomalous lift threshold");
+            BuildBoundary(parent,Level1End,"Level 1 corridor end");
         }
 
-        static void BuildSector(Transform parent,float x,int theme)
+        static void BuildLevelZero(Transform parent)
         {
-            float center=x+SectorLength*.5f;
-            Tiled(parent,"Pixel wallpaper · sector "+theme,PixelArtFactory.WallTile(theme),new Vector2(center,3.9f),new Vector2(SectorLength,7.8f),-20);
-            Tiled(parent,"Pixel carpet · sector "+theme,PixelArtFactory.FloorTile(theme),new Vector2(center,-.18f),new Vector2(SectorLength,.52f),-10);
-            Tiled(parent,"Pixel ceiling · sector "+theme,PixelArtFactory.CeilingTile(),new Vector2(center,7.92f),new Vector2(SectorLength,.34f),-15);
-            // Side-view service corridor dressing: exposed runs, support clips and discrete sodium fixtures.
-            for(int i=0;i<6;i++)
+            for(int section=0;section<4;section++)
             {
-                float px=x+2.4f+i*5.0f;
-                PixelRect(parent,"Overhead service pipe",new Vector2(px+2.3f,7.08f),new Vector2(4.85f,.17f),new Color(.10f,.15f,.14f),-6);
-                PixelRect(parent,"Pipe highlight",new Vector2(px+2.3f,7.16f),new Vector2(4.72f,.035f),theme==0?new Color(.36f,.29f,.17f):new Color(.31f,.38f,.31f),-5);
-                PixelRect(parent,"Pipe clamp",new Vector2(px+.32f,7.03f),new Vector2(.14f,.32f),new Color(.36f,.39f,.30f),-4);
-                PixelRect(parent,"Ceiling light housing",new Vector2(px+2.2f,7.54f),new Vector2(2.5f,.19f),new Color(.15f,.19f,.16f),-3);
-                PixelRect(parent,"Warm pixel light",new Vector2(px+2.2f,7.42f),new Vector2(1.95f,.07f),new Color(.80f,.66f,.39f),-2);
-                AddLightFlicker(parent,new Vector2(px+2.2f,7.34f));
-                PixelRect(parent,"Lower wall rail",new Vector2(px+2.2f,.53f),new Vector2(4.6f,.15f),theme==3?new Color(.18f,.25f,.23f):new Color(.20f,.24f,.18f),-4);
-                if(i%2==0)AddPlacard(parent,px+3.6f,5.55f,theme);
+                float x=Level0Start+section*SegmentLength,center=x+SegmentLength*.5f;
+                Tiled(parent,"Level 0 · yellow patterned wallpaper",PixelArtFactory.WallTile(0),new Vector2(center,3.9f),new Vector2(SegmentLength,7.8f),-20);
+                Tiled(parent,"Level 0 · damp old carpet",PixelArtFactory.FloorTile(0),new Vector2(center,-.18f),new Vector2(SegmentLength,.52f),-10);
+                Tiled(parent,"Level 0 · drop ceiling panels",PixelArtFactory.CeilingTile(0),new Vector2(center,7.92f),new Vector2(SegmentLength,.34f),-15);
+                BuildLevelZeroDetails(parent,x,section);
+            }
+            var floor=new GameObject("Level 0 · continuous walkable carpet");floor.transform.SetParent(parent,false);
+            floor.transform.position=new Vector3((Level0Start+Level0End)*.5f,-.26f,0);
+            floor.AddComponent<BoxCollider2D>().size=new Vector2(Level0End-Level0Start,.52f);
+
+            // Repeating, slightly shifted wall mouths and false corridors create visual disorientation without blocking movement.
+            BuildFalsePassage(parent,-2f,0);BuildFalsePassage(parent,28f,1);BuildFalsePassage(parent,69f,2);
+            BuildManilaRoom(parent,39f);
+
+            for(int i=0;i<5;i++)
+            {
+                float x=Level0Start+9f+i*23f;
+                float width=.10f+(i%2)*.08f;
+                PixelRect(parent,"Level 0 · damp carpet stain",new Vector2(x,.035f),new Vector2(1.2f+(i%3)*.45f,width),new Color(.18f,.19f,.105f,.68f),-7);
+                PixelRect(parent,"Level 0 · carpet wet sheen",new Vector2(x+.28f,.055f),new Vector2(.31f,.025f),new Color(.60f,.54f,.31f,.48f),-6);
+            }
+            BuildBoundary(parent,Level0Start-1.5f,"Level 0 starting wall");
+        }
+
+        static void BuildLevelZeroDetails(Transform parent,float x,int section)
+        {
+            // Wide aged wooden skirting is a defining detail of the old retail back rooms.
+            PixelRect(parent,"Level 0 · stained wood skirting",new Vector2(x+SegmentLength*.5f,.21f),new Vector2(SegmentLength,.25f),new Color(.42f,.30f,.13f),-7);
+            PixelRect(parent,"Level 0 · skirting highlight",new Vector2(x+SegmentLength*.5f,.34f),new Vector2(SegmentLength,.045f),new Color(.69f,.50f,.22f),-6);
+            PixelRect(parent,"Level 0 · wallpaper seam",new Vector2(x+15.05f,4.1f),new Vector2(.035f,7.1f),new Color(.53f,.44f,.24f,.48f),-6);
+
+            float outletX=x+(section%2==0?7f:21f);
+            AddWallOutlet(parent,new Vector2(outletX,1.0f));
+            if(section==1||section==3)AddWallOutlet(parent,new Vector2(x+27f,1.35f));
+
+            // Office-style suspended fluorescents, warm enough to yellow the wallpaper, with an unstable buzz/flicker.
+            for(int i=0;i<2;i++)
+            {
+                float lx=x+7.5f+i*14f;
+                PixelRect(parent,"Level 0 · fluorescent fixture housing",new Vector2(lx,7.48f),new Vector2(3.05f,.23f),new Color(.49f,.45f,.30f),-4);
+                PixelRect(parent,"Level 0 · fluorescent tube",new Vector2(lx,7.35f),new Vector2(2.56f,.10f),new Color(.96f,.88f,.62f),-3);
+                PixelRect(parent,"Level 0 · fluorescent hotspot",new Vector2(lx,7.29f),new Vector2(2.12f,.045f),new Color(1f,.93f,.69f,.48f),-2);
+                AddLightFlicker(parent,new Vector2(lx,7.20f),new Color(1f,.91f,.62f,.20f));
             }
 
-            if(theme==0)BuildLiminalProps(parent,x);
-            else if(theme==1)BuildOfficeProps(parent,x);
-            else if(theme==2)BuildWetProps(parent,x);
-            else BuildMaintenanceProps(parent,x);
-        }
-
-        static void BuildLiminalProps(Transform parent,float x)
-        {
-            PixelRect(parent,"Water damage",new Vector2(x+19,5.7f),new Vector2(4.2f,1.4f),new Color(.30f,.29f,.19f),-4);
-            PixelRect(parent,"Loose wallpaper",new Vector2(x+21,4.8f),new Vector2(1.2f,1.8f),new Color(.69f,.59f,.32f),-3);
-            PixelRect(parent,"Old pipe",new Vector2(x+12,6.35f),new Vector2(.17f,2.6f),new Color(.30f,.32f,.27f),-2);
-        }
-
-        static void BuildOfficeProps(Transform parent,float x)
-        {
-            for(int i=0;i<3;i++)
+            // Old pasted-over patches, vertical water marks and slightly misaligned paper repeats.
+            if(section%2==0)
             {
-                float px=x+8+i*8.3f;
-                PixelRect(parent,"Cubicle desk top",new Vector2(px,.92f),new Vector2(3.1f,.18f),new Color(.28f,.22f,.16f),-1);
-                PixelRect(parent,"Desk left leg",new Vector2(px-1.25f,.43f),new Vector2(.12f,.82f),new Color(.23f,.26f,.23f),-2);
-                PixelRect(parent,"Desk right leg",new Vector2(px+1.25f,.43f),new Vector2(.12f,.82f),new Color(.23f,.26f,.23f),-2);
-                PixelRect(parent,"Office partition",new Vector2(px,1.85f),new Vector2(3.1f,1.65f),new Color(.38f,.38f,.29f),-4);
-                PixelRect(parent,"CRT monitor",new Vector2(px,1.30f),new Vector2(.72f,.58f),new Color(.12f,.15f,.14f),-1);
-                PixelRect(parent,"Dead monitor glass",new Vector2(px,1.32f),new Vector2(.55f,.34f),new Color(.20f,.28f,.26f),0);
+                PixelRect(parent,"Level 0 · faded wallpaper repair",new Vector2(x+23f,3.7f),new Vector2(.76f,1.10f),new Color(.66f,.57f,.32f,.55f),-8);
+                PixelRect(parent,"Level 0 · wallpaper tear shadow",new Vector2(x+24.2f,2.95f),new Vector2(.10f,.56f),new Color(.30f,.29f,.16f,.72f),-7);
+            }
+            else
+            {
+                PixelRect(parent,"Level 0 · old moisture run",new Vector2(x+4.2f,4.3f),new Vector2(.16f,1.7f),new Color(.34f,.35f,.20f,.40f),-8);
+                PixelRect(parent,"Level 0 · water tide mark",new Vector2(x+4.35f,3.55f),new Vector2(.31f,.12f),new Color(.48f,.42f,.23f,.56f),-7);
+            }
+
+            // A handful of near-wall returns break the long sightline; these are background art only.
+            if(section>0)
+            {
+                float px=x+.6f;
+                PixelRect(parent,"Level 0 · wallpapered return column",new Vector2(px,3.5f),new Vector2(.34f,6.8f),new Color(.67f,.59f,.36f),-5);
+                PixelRect(parent,"Level 0 · column edge shadow",new Vector2(px+.21f,3.5f),new Vector2(.09f,6.8f),new Color(.31f,.29f,.17f,.72f),-4);
             }
         }
 
-        static void BuildWetProps(Transform parent,float x)
+        static void BuildFalsePassage(Transform parent,float x,int variant)
         {
-            for(int i=0;i<4;i++)
-            {
-                float px=x+4+i*7.1f;
-                PixelRect(parent,"Vertical water pipe",new Vector2(px,4.2f),new Vector2(.22f,6.8f),new Color(.20f,.28f,.27f),-2);
-                PixelRect(parent,"Pipe collar",new Vector2(px,6.6f),new Vector2(.42f,.18f),new Color(.39f,.43f,.36f),-1);
-                PixelRect(parent,"Leak stain",new Vector2(px+1.2f,5.4f),new Vector2(1.45f,2.2f),new Color(.22f,.30f,.24f),-4);
-            }
-            PixelRect(parent,"Water on carpet",new Vector2(x+19,.10f),new Vector2(6.2f,.06f),new Color(.21f,.34f,.32f),-7);
+            float h=variant==1?4.7f:5.25f,w=variant==2?3.8f:3.05f;
+            PixelRect(parent,"Level 0 · false corridor shadow",new Vector2(x,2.25f+h*.5f),new Vector2(w,h),new Color(.20f,.20f,.12f),-9);
+            PixelRect(parent,"Level 0 · distant yellow room",new Vector2(x,2.0f+h*.5f),new Vector2(w-.34f,h-.5f),new Color(.49f,.45f,.28f),-8);
+            PixelRect(parent,"Level 0 · left wallpaper return",new Vector2(x-w*.5f,2.0f+h*.5f),new Vector2(.15f,h),new Color(.84f,.73f,.43f),-5);
+            PixelRect(parent,"Level 0 · right wallpaper return",new Vector2(x+w*.5f,2.0f+h*.5f),new Vector2(.15f,h),new Color(.73f,.62f,.36f),-5);
+            PixelRect(parent,"Level 0 · passage ceiling shadow",new Vector2(x,2f+h),new Vector2(w+.2f,.16f),new Color(.75f,.65f,.40f),-5);
+            PixelRect(parent,"Level 0 · far fluorescent glow",new Vector2(x,2.0f+h*.5f+1.4f),new Vector2(.92f,.08f),new Color(1f,.91f,.62f,.84f),-4);
         }
 
-        static void BuildMaintenanceProps(Transform parent,float x)
+        static void BuildManilaRoom(Transform parent,float x)
+        {
+            // The rare Manila Room provides a diegetic solo meeting/trading anomaly without adding online wanderers.
+            Tiled(parent,"Level 0 · rare Manila Room wallpaper",PixelArtFactory.ManilaWallTile(),new Vector2(x,3.9f),new Vector2(10f,7.8f),-17);
+            PixelRect(parent,"Manila Room · left wood jamb",new Vector2(x-5f,3.65f),new Vector2(.23f,7.25f),new Color(.34f,.24f,.12f),-4);
+            PixelRect(parent,"Manila Room · right wood jamb",new Vector2(x+5f,3.65f),new Vector2(.23f,7.25f),new Color(.34f,.24f,.12f),-4);
+            PixelRect(parent,"Manila Room · warm ceiling fixture",new Vector2(x,7.35f),new Vector2(2.25f,.14f),new Color(.92f,.63f,.30f),-2);
+            AddLightFlicker(parent,new Vector2(x,7.20f),new Color(1f,.66f,.31f,.16f));
+            PixelRect(parent,"Manila Room · old table shadow",new Vector2(x,1.05f),new Vector2(3.0f,.15f),new Color(.26f,.18f,.10f),-3);
+            PixelRect(parent,"Manila Room · wooden counter",new Vector2(x,1.18f),new Vector2(2.9f,.16f),new Color(.53f,.37f,.18f),-2);
+            PixelRect(parent,"Manila Room · counter highlight",new Vector2(x,1.27f),new Vector2(2.76f,.035f),new Color(.78f,.55f,.26f),-1);
+            PixelRect(parent,"Manila Room · left table leg",new Vector2(x-1.08f,.72f),new Vector2(.12f,.75f),new Color(.37f,.25f,.12f),-2);
+            PixelRect(parent,"Manila Room · right table leg",new Vector2(x+1.08f,.72f),new Vector2(.12f,.75f),new Color(.37f,.25f,.12f),-2);
+            PixelRect(parent,"Manila Room · paper on counter",new Vector2(x+.66f,1.39f),new Vector2(.37f,.035f),new Color(.83f,.76f,.56f),0);
+        }
+
+        static void BuildIndustrialLevel(Transform parent,float start,int level)
+        {
+            const float length=Level1End-Level1Start;
+            for(int section=0;section<4;section++)
+            {
+                float x=start+section*SegmentLength,center=x+SegmentLength*.5f;
+                Tiled(parent,"Level 1 · concrete service wall",PixelArtFactory.WallTile(3),new Vector2(center,3.9f),new Vector2(SegmentLength,7.8f),-20);
+                Tiled(parent,"Level 1 · stained concrete floor",PixelArtFactory.FloorTile(3),new Vector2(center,-.18f),new Vector2(SegmentLength,.52f),-10);
+                Tiled(parent,"Level 1 · exposed ceiling",PixelArtFactory.CeilingTile(3),new Vector2(center,7.92f),new Vector2(SegmentLength,.34f),-15);
+                BuildIndustrialDressing(parent,x,section,level);
+            }
+            var floor=new GameObject("Level 1 · continuous walkable floor");floor.transform.SetParent(parent,false);
+            floor.transform.position=new Vector3(start+length*.5f,-.26f,0);
+            floor.AddComponent<BoxCollider2D>().size=new Vector2(length,.52f);
+        }
+
+        static void BuildIndustrialDressing(Transform parent,float x,int section,int level)
         {
             for(int i=0;i<5;i++)
             {
-                float px=x+3+i*5.7f;
-                PixelRect(parent,"Industrial wall rib",new Vector2(px,3.9f),new Vector2(.25f,7.8f),new Color(.17f,.21f,.19f),-3);
-                PixelRect(parent,"Cable tray",new Vector2(px+1.8f,6.85f),new Vector2(3.3f,.24f),new Color(.20f,.25f,.23f),-2);
+                float px=x+2f+i*5.5f;
+                PixelRect(parent,"Level 1 · exposed service pipe",new Vector2(px+2.3f,7.08f),new Vector2(4.85f,.17f),new Color(.10f,.15f,.14f),-6);
+                PixelRect(parent,"Level 1 · rust pipe seam",new Vector2(px+2.3f,7.16f),new Vector2(4.72f,.035f),new Color(.36f,.29f,.17f),-5);
+                PixelRect(parent,"Level 1 · pipe bracket",new Vector2(px+.32f,7.03f),new Vector2(.14f,.32f),new Color(.36f,.39f,.30f),-4);
+                if(i%2==0)
+                {
+                    PixelRect(parent,"Level 1 · fluorescent fixture housing",new Vector2(px+2.2f,7.54f),new Vector2(2.5f,.19f),new Color(.15f,.19f,.16f),-3);
+                    PixelRect(parent,"Level 1 · fluorescent tube",new Vector2(px+2.2f,7.42f),new Vector2(1.95f,.07f),new Color(.80f,.66f,.39f),-2);
+                    AddLightFlicker(parent,new Vector2(px+2.2f,7.34f),new Color(.92f,.84f,.57f,.18f));
+                }
             }
-            PixelRect(parent,"Generator body",new Vector2(x+23,1.12f),new Vector2(2.6f,1.7f),new Color(.19f,.24f,.22f),0);
-            PixelRect(parent,"Generator face",new Vector2(x+23,1.2f),new Vector2(1.25f,.66f),new Color(.11f,.15f,.14f),1);
-            PixelRect(parent,"Generator warning",new Vector2(x+23.35f,1.34f),new Vector2(.16f,.14f),new Color(.83f,.29f,.13f),2);
+            PixelRect(parent,"Level 1 · heavy wall base rail",new Vector2(x+15f,.53f),new Vector2(29f,.15f),new Color(.20f,.24f,.18f),-4);
+            if(section==1||section==3)BuildIndustrialRecess(parent,x+18f);
+            if(section==2)BuildUtilityCabinet(parent,x+23f);
+            if(section%2==0)AddPlacard(parent,x+23f,5.55f,3);
         }
 
-        static void BuildDoorway(Transform parent,float x,int sector)
+        static void BuildIndustrialRecess(Transform parent,float x)
         {
-            PixelRect(parent,"Door frame left",new Vector2(x,.3f),new Vector2(.30f,3.55f),new Color(.11f,.16f,.15f),-3);
-            PixelRect(parent,"Door frame right",new Vector2(x+1.7f,.3f),new Vector2(.30f,3.55f),new Color(.11f,.16f,.15f),-3);
-            PixelRect(parent,"Door lintel",new Vector2(x+.85f,3.95f),new Vector2(2.05f,.30f),new Color(.20f,.26f,.22f),-3);
-            var door=new GameObject("Backrooms security door · zone "+sector);door.transform.SetParent(parent,false);door.transform.position=new Vector3(x+.85f,0,0);
-            var renderer=door.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.BunkerDoor();renderer.sortingOrder=-2;
-            PixelRect(parent,"Sector warning sign",new Vector2(x+.85f,4.42f),new Vector2(1.45f,.40f),new Color(.08f,.12f,.11f),-1);
-            PixelRect(parent,"Sector sign stripe",new Vector2(x+.85f,4.42f),new Vector2(.95f,.075f),sector==3?new Color(.75f,.22f,.12f):new Color(.75f,.54f,.27f),0);
-            PixelRect(parent,"Door status lamp",new Vector2(x+1.13f,2.02f),new Vector2(.08f,.22f),new Color(.86f,.35f,.17f),1);
+            PixelRect(parent,"Level 1 · service recess shadow",new Vector2(x,2.05f),new Vector2(2.15f,3.55f),new Color(.035f,.047f,.041f),-7);
+            PixelRect(parent,"Level 1 · recess left jamb",new Vector2(x-1.15f,2.08f),new Vector2(.16f,3.7f),new Color(.28f,.33f,.26f),-5);
+            PixelRect(parent,"Level 1 · recess right jamb",new Vector2(x+1.15f,2.08f),new Vector2(.16f,3.7f),new Color(.27f,.30f,.24f),-5);
+            PixelRect(parent,"Level 1 · recess header",new Vector2(x,3.94f),new Vector2(2.4f,.18f),new Color(.30f,.33f,.26f),-5);
+        }
+
+        static void BuildUtilityCabinet(Transform parent,float x)
+        {
+            PixelRect(parent,"Level 1 · service panel",new Vector2(x,3.4f),new Vector2(.82f,2.35f),new Color(.10f,.15f,.14f),-6);
+            PixelRect(parent,"Level 1 · panel rust edge",new Vector2(x,3.4f),new Vector2(.69f,2.16f),new Color(.31f,.20f,.15f),-5);
+            PixelRect(parent,"Level 1 · panel inset",new Vector2(x,3.4f),new Vector2(.52f,1.94f),new Color(.07f,.11f,.10f),-4);
+            PixelRect(parent,"Level 1 · panel green lamp",new Vector2(x+.10f,3.78f),new Vector2(.09f,.09f),new Color(.48f,.69f,.34f),-3);
+            PixelRect(parent,"Level 1 · panel amber lamp",new Vector2(x+.10f,3.52f),new Vector2(.09f,.09f),new Color(.82f,.52f,.22f),-3);
+        }
+
+        static void AddWallOutlet(Transform parent,Vector2 position)
+        {
+            var go=new GameObject("Level 0 · old wall outlet");go.transform.SetParent(parent,false);go.transform.position=new Vector3(position.x,position.y,0);
+            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.WallOutlet();renderer.sortingOrder=-5;
+        }
+
+        static void BuildBoundary(Transform parent,float x,string name)
+        {
+            var go=new GameObject(name+" · collision boundary");go.transform.SetParent(parent,false);go.transform.position=new Vector3(x+.35f,3.4f,0);
+            go.AddComponent<BoxCollider2D>().size=new Vector2(.45f,7.2f);
         }
 
         static void AddPlacard(Transform parent,float x,float y,int theme)
         {
-            var go=new GameObject("Hand-painted sector placard");go.transform.SetParent(parent,false);go.transform.position=new Vector3(x,y,0);
+            var go=new GameObject("Level 1 · warning placard");go.transform.SetParent(parent,false);go.transform.position=new Vector3(x,y,0);
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.WarningPlacard(theme);renderer.sortingOrder=-4;
-        }
-
-        static void BuildBackgroundDecor(Transform parent)
-        {
-            // Pixel silhouettes add depth while remaining on 2D sprite layers.
-            for(int i=0;i<12;i++)
-            {
-                float x=-22+i*10.6f;
-                PixelRect(parent,"Near shadow column",new Vector2(x,2.4f),new Vector2(.30f,4.8f),new Color(.08f,.11f,.10f,.42f),-8);
-                PixelRect(parent,"Column cap",new Vector2(x,4.9f),new Vector2(.55f,.14f),new Color(.17f,.21f,.17f),-7);
-                PixelRect(parent,"Column base",new Vector2(x,.13f),new Vector2(.52f,.18f),new Color(.13f,.16f,.14f),-7);
-            }
         }
 
         static void Tiled(Transform parent,string name,Sprite sprite,Vector2 position,Vector2 size,int order)
@@ -127,17 +193,14 @@ namespace Subsistence
 
         static void PixelRect(Transform parent,string name,Vector2 center,Vector2 size,Color color,int order)
         {
-            var go=new GameObject(name);go.transform.SetParent(parent,false);go.transform.position=new Vector3(center.x,center.y,0);
-            go.transform.localScale=new Vector3(size.x,size.y,1);
+            var go=new GameObject(name);go.transform.SetParent(parent,false);go.transform.position=new Vector3(center.x,center.y,0);go.transform.localScale=new Vector3(size.x,size.y,1);
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Block(Color.white);renderer.color=color;renderer.sortingOrder=order;
         }
 
-        static void AddLightFlicker(Transform parent,Vector2 position)
+        static void AddLightFlicker(Transform parent,Vector2 position,Color color)
         {
-            var go=new GameObject("Pixel light flicker");go.transform.SetParent(parent,false);go.transform.position=new Vector3(position.x,position.y,0);
-            go.transform.localScale=new Vector3(2.15f,.32f,1f);
-            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Block(Color.white);renderer.color=new Color(.92f,.84f,.57f,.18f);renderer.sortingOrder=-1;
-            go.AddComponent<PixelLightFlicker>();
+            var go=new GameObject("Fluorescent light · unstable buzz");go.transform.SetParent(parent,false);go.transform.position=new Vector3(position.x,position.y,0);go.transform.localScale=new Vector3(2.15f,.32f,1f);
+            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Block(Color.white);renderer.color=color;renderer.sortingOrder=-1;go.AddComponent<PixelLightFlicker>();
         }
     }
 }

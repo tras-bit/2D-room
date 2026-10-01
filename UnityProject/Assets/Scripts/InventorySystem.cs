@@ -58,7 +58,7 @@ namespace Subsistence
             new ItemDefinition(ItemId.Helmet,"Каска с фонарём","Броня","Стальная каска со старым налобным фонарём.",1,2,new Color(.62f,.57f,.34f),GearSlot.Head,24,14,30,8),
             new ItemDefinition(ItemId.ArmorVest,"Самодельный бронежилет","Броня","Пластины и плотная ткань снижают урон.",1,3,new Color(.43f,.40f,.32f),GearSlot.Chest,42,24,12,0),
             new ItemDefinition(ItemId.Medkit,"Аптечка","MED","Полный набор первой помощи.",2,2,new Color(.74f,.49f,.38f)),
-            new ItemDefinition(ItemId.Keycard,"Карта доступа","KEY","Пропуск для запертой двери сектора.",3,1,new Color(.41f,.68f,.54f)),
+            new ItemDefinition(ItemId.Keycard,"Зелёная карта","KEY","Карта-пропуск: активирует лифт на следующий уровень.",1,1,new Color(.38f,.72f,.43f)),
             new ItemDefinition(ItemId.Rifle,"Карабин","WEAPON","Старый карабин. Редкая находка.",1,3,new Color(.49f,.48f,.39f)),
             new ItemDefinition(ItemId.RifleAmmo,"Патроны 5.56","AMMO","Боеприпас для карабина.",40,3,new Color(.74f,.61f,.32f)),
             new ItemDefinition(ItemId.HazmatSuit,"Защитный костюм","Броня","Защита от холода и радиоактивной пыли.",1,3,new Color(.71f,.68f,.27f),GearSlot.Chest,18,20,38,55),
@@ -136,6 +136,16 @@ namespace Subsistence
             if(!CanFitCombined(id,amount)){Notify("Недостаточно места в рюкзаке.");return false;}
             int remainder=InsertInto(Backpack,id,amount);if(remainder>0)remainder=InsertInto(Belt,id,remainder);
             AudioDirector.Instance?.Play("metal",.22f);RecalculateArmor();return remainder==0;
+        }
+        public bool TradeForGreenCard(int scrapCost)
+        {
+            if(Count(ItemId.Keycard)>0){Notify("Зелёная карта уже у тебя.");return false;}
+            if(Count(ItemId.Scrap)<scrapCost){Notify("Торговец просит "+scrapCost+" металлолома за зелёную карту.");return false;}
+            if(!CanFitCombined(ItemId.Keycard,1)){Notify("Освободи место в рюкзаке для зелёной карты.");return false;}
+            Consume(ItemId.Scrap,scrapCost);
+            if(!Add(ItemId.Keycard,1)){Add(ItemId.Scrap,scrapCost);return false;}
+            Notify("Обмен завершён: зелёная карта получена. Лифты открыты.");
+            return true;
         }
         static bool CanFit(ItemStack[] slots,ItemId id,int amount)
         {

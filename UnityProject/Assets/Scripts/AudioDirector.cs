@@ -11,6 +11,7 @@ namespace Subsistence
         public float AmbienceVolume { get; private set; } = .30f;
         public float MusicVolume { get; private set; } = .46f;
         AudioSource ambience;
+        AudioSource fluorescentHum;
         AudioSource music;
         AudioSource effects;
         readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
@@ -32,6 +33,7 @@ namespace Subsistence
             AudioListener.volume=MasterVolume;
             DontDestroyOnLoad(gameObject);
             Load("ambience", "ambience_service_tunnel");
+            Load("fluorescent", "fluorescent_level0");
             Load("music", "theme_subsistence");
             Load("ui", "ui_confirm");
             Load("metal", "pickup_metal");
@@ -51,6 +53,11 @@ namespace Subsistence
             ambience.ignoreListenerPause = true;
             if (ambience.clip != null) ambience.Play();
 
+            fluorescentHum=gameObject.AddComponent<AudioSource>();
+            fluorescentHum.clip=clips.TryGetValue("fluorescent",out var hum)?hum:null;
+            fluorescentHum.loop=true;fluorescentHum.volume=0f;fluorescentHum.spatialBlend=0f;fluorescentHum.playOnAwake=false;fluorescentHum.ignoreListenerPause=true;
+            if(fluorescentHum.clip!=null)fluorescentHum.Play();
+
             music=gameObject.AddComponent<AudioSource>();
             music.clip=clips.TryGetValue("music",out var score)?score:null;
             music.loop=true;music.volume=MusicVolume;music.spatialBlend=0f;music.playOnAwake=false;music.ignoreListenerPause=true;
@@ -60,6 +67,19 @@ namespace Subsistence
             effects.playOnAwake = false;
             effects.spatialBlend = 0f;
             effects.volume = 1f;
+        }
+
+        void Update()
+        {
+            if(fluorescentHum==null)return;
+            var mode=GameHUD.Mode;
+            bool inGame=mode==GameHUD.ScreenMode.Playing||mode==GameHUD.ScreenMode.Inventory||mode==GameHUD.ScreenMode.Paused;
+            int level=RunState.Instance!=null?RunState.Instance.CurrentLevel:0;
+            bool inLevelZero=inGame&&level==0;
+            float bedTarget=inGame?(level==0?AmbienceVolume*.14f:AmbienceVolume):AmbienceVolume*.22f;
+            ambience.volume=Mathf.MoveTowards(ambience.volume,bedTarget,Time.unscaledDeltaTime*.28f);
+            float humTarget=inLevelZero?AmbienceVolume*.44f:0f;
+            fluorescentHum.volume=Mathf.MoveTowards(fluorescentHum.volume,humTarget,Time.unscaledDeltaTime*.22f);
         }
 
         void Load(string key,string resource)

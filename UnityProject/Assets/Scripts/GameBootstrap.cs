@@ -12,8 +12,8 @@ namespace Subsistence
         void Awake()
         {
             Application.targetFrameRate=60;
-            world=new GameObject("2D Pixel World · Backrooms sectors").transform;world.SetParent(transform,false);
-            WorldBuilder2D.Build(world);CreateCamera();CreatePlayer();CreateContainers();CreateWorkbenches();CreateWatchers();CreateExit();
+            world=new GameObject("2D Pixel World · Backrooms levels").transform;world.SetParent(transform,false);
+            WorldBuilder2D.Build(world);CreateCamera();CreatePlayer();CreateContainers();CreateWorkbenches();CreateWatchers();CreateTrader();CreateElevators();
             gameObject.AddComponent<RunState>();gameObject.AddComponent<AudioDirector>();gameObject.AddComponent<GameHUD>();
         }
 
@@ -39,9 +39,10 @@ namespace Subsistence
 
         void CreateContainers()
         {
-            MakeContainer(-8f,1,"FIELD SUPPLY CRATE");MakeContainer(1.5f,1,"FIELD SUPPLY CRATE");
-            MakeContainer(19f,2,"OFFICE SECURITY CRATE");MakeContainer(43f,1,"FIELD SUPPLY CRATE");
-            MakeContainer(56f,2,"UTILITY LOCKER");MakeContainer(76f,3,"SEALED ARMOURY");MakeContainer(89f,3,"MAINTENANCE CACHE");
+            // Sparse, non-blocking supply finds preserve Level 0's empty, resource-starved entry-level feeling.
+            MakeContainer(-9f,1,"LEVEL 0 · DAMP CARDBOARD BOX");
+            MakeContainer(18f,1,"LEVEL 0 · LOST SUPPLY CASE");
+            MakeContainer(62f,2,"LEVEL 0 · SEALED WALL CACHE");
         }
         void MakeContainer(float x,int tier,string name)
         {
@@ -50,7 +51,7 @@ namespace Subsistence
             var collider=go.AddComponent<BoxCollider2D>();collider.size=new Vector2(1.2f,1.0f);collider.offset=new Vector2(0,.5f);
             go.AddComponent<LootContainer>().Initialize(tier,name);
         }
-        void CreateWorkbenches(){MakeBench(14f,1,"FIELD BENCH");MakeBench(53f,2,"ELECTRONICS BENCH");MakeBench(82f,3,"ARMOURY BENCH");}
+        void CreateWorkbenches(){MakeBench(137f,1,"LEVEL 1 · FOUND WORKTABLE");MakeBench(191f,2,"LEVEL 1 · SERVICE BENCH");}
         void MakeBench(float x,int tier,string name)
         {
             var go=new GameObject(name);go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);
@@ -58,7 +59,7 @@ namespace Subsistence
             var collider=go.AddComponent<BoxCollider2D>();collider.size=new Vector2(1.9f,.86f);collider.offset=new Vector2(0,.43f);collider.isTrigger=true;
             go.AddComponent<WorkbenchStation>().Initialize(tier,name);
         }
-        void CreateWatchers(){CreateWatcherAt(29f,"WATCHER · OFFICE WING");CreateWatcherAt(83f,"WATCHER · MAINTENANCE");}
+        void CreateWatchers(){CreateWatcherAt(153f,"LEVEL 1 · WATCHER IN THE DARK");CreateWatcherAt(198f,"LEVEL 1 · WATCHER NEAR THE SERVICE BAY");}
         void CreateWatcherAt(float x,string name)
         {
             var go=new GameObject(name);go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);
@@ -67,20 +68,20 @@ namespace Subsistence
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Watcher(0);renderer.sortingOrder=10;
             go.AddComponent<PixelFrameAnimator>();go.AddComponent<CharacterVisual2D>();go.AddComponent<WatcherAI>();
         }
-        void CreateExit()
+        void CreateTrader()
         {
-            float x=94.5f;
-            PixelBlock("Exit hatch · frame",new Vector2(x,3.15f),new Vector2(3.0f,6.3f),new Color(.12f,.17f,.16f),-1);
-            PixelBlock("Exit hatch · dark opening",new Vector2(x,2.5f),new Vector2(2.15f,5f),new Color(.025f,.043f,.042f),0);
-            for(int i=-2;i<=2;i++)PixelBlock("Exit hatch rib",new Vector2(x+i*.43f,2.4f),new Vector2(.055f,4.6f),new Color(.36f,.42f,.36f),1);
-            PixelBlock("Exit light",new Vector2(x,5.2f),new Vector2(.74f,.12f),new Color(.57f,.83f,.43f),3);
-            var stop=new GameObject("Side-view world boundary");stop.transform.SetParent(world,false);stop.transform.position=new Vector3(96.6f,3.5f,0);
-            var boundary=stop.AddComponent<BoxCollider2D>();boundary.size=new Vector2(.5f,7f);
+            var go=new GameObject("Level 0 · Manila Room attendant");go.transform.SetParent(world,false);go.transform.position=new Vector3(39f,0,0);
+            go.AddComponent<TraderNPC>().Initialize();
         }
-        void PixelBlock(string name,Vector2 position,Vector2 size,Color color,int order)
+        void CreateElevators()
         {
-            var go=new GameObject(name);go.transform.SetParent(world,false);go.transform.position=new Vector3(position.x,position.y,0);go.transform.localScale=new Vector3(size.x,size.y,1);
-            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Block(Color.white);renderer.color=color;renderer.sortingOrder=order;
+            // An anomalous twin-lift transition sits beyond the yellow maze and arrives at Level 1.
+            MakeElevator(1,87f,116f);MakeElevator(2,88.5f,116.5f);
+        }
+        void MakeElevator(int number,float x,float arrivalX)
+        {
+            var go=new GameObject("Level 0 · elevator "+number+" to Level 1");go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);
+            go.AddComponent<LevelElevator>().Initialize(number,1,arrivalX);
         }
     }
 }

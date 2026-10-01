@@ -47,6 +47,30 @@ def ambience():
     save("ambience_service_tunnel", data)
 
 
+def fluorescent_hum():
+    """Loopable, gently unstable mains buzz for the empty Level 0 ceiling lights."""
+    duration = 8.0
+    count = int(SAMPLE_RATE * duration)
+    rng = random.Random(601)
+    noise = 0.0
+    data = []
+    for i in range(count):
+        t = i / SAMPLE_RATE
+        noise = noise * .965 + rng.uniform(-1, 1) * .035
+        drift = .86 + .09 * math.sin(2 * math.pi * .17 * t) + .05 * math.sin(2 * math.pi * .43 * t + .7)
+        mains = (.19 * math.sin(2 * math.pi * 60 * t) +
+                 .24 * math.sin(2 * math.pi * 120 * t + .2) +
+                 .11 * math.sin(2 * math.pi * 240 * t + .6) +
+                 .045 * math.sin(2 * math.pi * 960 * t + 1.2))
+        data.append(drift * (mains + noise * .16))
+    fade = int(SAMPLE_RATE * .20)
+    for i in range(fade):
+        q = i / fade
+        blend = data[-fade + i] * (1 - q) + data[i] * q
+        data[i] = data[-fade + i] = blend
+    save("fluorescent_level0", data)
+
+
 def score():
     duration = 24.0
     rng = random.Random(92)
@@ -88,6 +112,7 @@ def effects():
 
 if __name__ == "__main__":
     ambience()
+    fluorescent_hum()
     score()
     effects()
     print(f"Wrote original WAV assets to {OUT}")

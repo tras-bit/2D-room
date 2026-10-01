@@ -11,12 +11,13 @@ namespace Subsistence
         public int Scrap{get;private set;}
         public int Cloth{get;private set;}
         public int SuppliesFound{get;private set;}
+        public int CurrentLevel{get;private set;}=0;
         public float ShiftSeconds{get;private set;}
-        public string Notice{get;private set;}="Выбери сектор. Найди ресурсы и переживи смену.";
+        public string Notice{get;private set;}="LEVEL 0 · найди редкую Manila Room и выход в Level 1.";
         public float NoticeTime{get;private set;}=4;
         public bool IsDead{get;private set;}
         public bool HasEscaped{get;private set;}
-        public const float ExitX=94.5f;
+
         void Awake(){if(Instance!=null&&Instance!=this){Destroy(gameObject);return;}Instance=this;}
         void Update()
         {
@@ -36,6 +37,11 @@ namespace Subsistence
             }
         }
         public void RecordSupplyCrate(){SuppliesFound++;Notify("Запасы обнаружены · ящик осмотрен.");}
+        public void EnterLevel(int level)
+        {
+            if(level<=CurrentLevel)return;
+            CurrentLevel=level;Notify("ПЕРЕХОД ЗАВЕРШЁН · BACKROOMS LEVEL "+CurrentLevel+".",5f);
+        }
         public void TakeDamage(float amount)
         {if(IsDead||HasEscaped)return;Health=Mathf.Max(0,Health-amount);if(Health<=0){IsDead=true;Notify("Смена завершена. Сигнал прерван.",99);}}
         public void Heal(float amount){Health=Mathf.Min(100,Health+amount);}
@@ -43,14 +49,9 @@ namespace Subsistence
         public void Drink(float amount){Thirst=Mathf.Min(100,Thirst+amount);}
         public bool CraftBandage(){var bag=FindObjectOfType<InventorySystem>();return bag!=null&&bag.CraftBandage();}
         public void ResetForNewRun()
-        {Health=100;Hunger=82;Thirst=68;Scrap=0;Cloth=0;SuppliesFound=0;ShiftSeconds=0;IsDead=false;HasEscaped=false;Notify("Ты один в бесконечных комнатах. Найди выход.",4);}
-        public void CheckExit(float x)
         {
-            if(x<ExitX)return;
-            var bag=FindObjectOfType<InventorySystem>();bool keycard=bag!=null&&bag.Count(ItemId.Keycard)>0;
-            if(SuppliesFound>=3&&keycard){HasEscaped=true;Notify("Сектор покинут. Но за дверью — новый сигнал.",99);}
-            else if(!keycard)Notify("Дверь заблокирована. Нужна карта доступа из ящика уровня 3.");
-            else Notify("Сначала осмотри припасы в трёх ящиках.");
+            Health=100;Hunger=82;Thirst=68;Scrap=0;Cloth=0;SuppliesFound=0;ShiftSeconds=0;CurrentLevel=0;IsDead=false;HasEscaped=false;
+            Notify("LEVEL 0 · жёлтые комнаты, влажный ковёр, гул ламп. Найди редкую Manila Room.",6f);
         }
         public void Notify(string message,float duration=2.2f){Notice=message;NoticeTime=duration;}
     }
