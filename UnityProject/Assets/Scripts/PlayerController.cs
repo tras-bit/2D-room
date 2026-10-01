@@ -9,23 +9,24 @@ namespace Subsistence
         public float JumpVelocity=8.4f;
         Rigidbody2D body;
         InventorySystem inventory;
-        CharacterModel3D character;
+        CharacterVisual2D character;
+        SpriteRenderer beamRenderer;
         bool grounded,flashlightOn=true;
         float invulnerable,attackCooldown,footstepClock,horizontal;
         int facing=1;
-        Light flashlight;
         public bool FlashlightOn=>flashlightOn;
         public InventorySystem Inventory=>inventory;
-        public CharacterModel3D Character=>character;
+        public CharacterVisual2D Character=>character;
 
         void Awake()
         {
-            body=GetComponent<Rigidbody2D>();
-            character=GetComponent<CharacterModel3D>();if(character==null)character=gameObject.AddComponent<CharacterModel3D>();
+            body=GetComponent<Rigidbody2D>();body.gravityScale=3.1f;body.freezeRotation=true;body.interpolation=RigidbodyInterpolation2D.Interpolate;
+            character=GetComponent<CharacterVisual2D>();if(character==null)character=gameObject.AddComponent<CharacterVisual2D>();
             inventory=GetComponent<InventorySystem>();if(inventory==null)inventory=gameObject.AddComponent<InventorySystem>();
             inventory.Character=character;
-            var lightGo=new GameObject("Handheld beam");lightGo.transform.SetParent(transform,false);lightGo.transform.localPosition=new Vector3(0,1.45f,0);
-            flashlight=lightGo.AddComponent<Light>();flashlight.type=LightType.Point;flashlight.color=new Color(1f,.87f,.58f);flashlight.intensity=1.25f;flashlight.range=7.5f;flashlight.shadows=LightShadows.None;
+            var beam=new GameObject("Pixel flashlight beam");beam.transform.SetParent(transform,false);
+            beamRenderer=beam.AddComponent<SpriteRenderer>();beamRenderer.sprite=PixelArtFactory.FlashlightBeam();beamRenderer.sortingOrder=8;beamRenderer.color=new Color(1f,.91f,.68f,.54f);
+            beam.transform.localPosition=new Vector3(.3f,1.05f,0);beamRenderer.enabled=flashlightOn;
         }
         void Start(){inventory.BeginRun();}
 
@@ -37,9 +38,12 @@ namespace Subsistence
                 if(grounded){body.velocity=new Vector2(body.velocity.x,JumpVelocity);grounded=false;}
             if(Input.GetKeyDown(KeyCode.E))Interact();
             if(Input.GetKeyDown(KeyCode.Q)&&attackCooldown<=0)Attack();
+            if(Input.GetKeyDown(KeyCode.H))inventory.UseQuickMed();
             if(Input.GetKeyDown(KeyCode.C))inventory.CraftBandage();
             if(Input.GetKeyDown(KeyCode.F))ToggleFlashlight();
             for(int i=0;i<6;i++)if(Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1+i)))inventory.SelectBelt(i);
+            float wheel=Input.mouseScrollDelta.y;
+            if(Mathf.Abs(wheel)>.01f)inventory.SelectBelt((inventory.SelectedBeltSlot+(wheel>0?5:1))%InventorySystem.BeltSize);
             if(invulnerable>0)invulnerable-=Time.deltaTime;if(attackCooldown>0)attackCooldown-=Time.deltaTime;
             if(Mathf.Abs(horizontal)>.05f)
             {
@@ -47,7 +51,13 @@ namespace Subsistence
                 if(footstepClock>.38f){footstepClock=0;AudioDirector.Instance?.Play("step",.27f);}
             }
             else footstepClock=0;
-            character?.SetMotion(Mathf.Abs(horizontal),grounded,!grounded,facing,false);
+            if(character!=null)character.SetMotion(Mathf.Abs(horizontal),grounded,!grounded,facing,false);
+            if(beamRenderer!=null)
+            {
+                beamRenderer.flipX=facing<0;
+                beamRenderer.enabled=flashlightOn;
+                beamRenderer.transform.localPosition=new Vector3(facing*.3f,1.05f,0);
+            }
         }
         void FixedUpdate()
         {
@@ -98,14 +108,15 @@ namespace Subsistence
         }
         void ToggleFlashlight()
         {
-            flashlightOn=!flashlightOn;if(flashlight!=null)flashlight.enabled=flashlightOn;
+            flashlightOn=!flashlightOn;if(beamRenderer!=null)beamRenderer.enabled=flashlightOn;
             AudioDirector.Instance?.Play("ui",.45f);RunState.Instance.Notify(flashlightOn?"Фонарь включён.":"Фонарь выключен.",1.4f);
         }
         public void ResetForNewRun()=>ResetForNewRun(-19f);
         public void ResetForNewRun(float startX)
         {
             transform.position=new Vector3(startX,0,0);body.velocity=Vector2.zero;grounded=false;horizontal=0;invulnerable=0;attackCooldown=0;footstepClock=0;facing=1;flashlightOn=true;
-            if(flashlight!=null)flashlight.enabled=true;if(inventory!=null){inventory.BeginRun();character?.SetGear(inventory.Gear);}
+            if(beamRenderer!=null){beamRenderer.enabled=true;beamRenderer.flipX=false;}
+            if(inventory!=null){inventory.BeginRun();character?.SetGear(inventory.Gear);}
         }
     }
 }

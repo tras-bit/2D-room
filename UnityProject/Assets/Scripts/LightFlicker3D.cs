@@ -2,16 +2,11 @@ using UnityEngine;
 
 namespace Subsistence
 {
-    [RequireComponent(typeof(Light))]
+    /// <summary>Legacy script name retained for compatibility; flickers a SpriteRenderer, never a 3D Light.</summary>
+    [System.Obsolete("Use PixelLightFlicker. This compatibility wrapper uses only 2D sprites.")]
+    [RequireComponent(typeof(SpriteRenderer))]
     public sealed class LightFlicker3D : MonoBehaviour
     {
-        Light source;float phase;float baseIntensity;
-        void Awake(){source=GetComponent<Light>();phase=Random.value*6.28f;baseIntensity=source.intensity;}
-        void Update()
-        {
-            float pulse=.92f+Mathf.Sin(Time.time*1.7f+phase)*.065f;
-            if(Random.value>.998f)pulse*=Random.Range(.25f,.7f);
-            source.intensity=baseIntensity*pulse;
-        }
+        void Awake(){if(GetComponent<PixelLightFlicker>()==null)gameObject.AddComponent<PixelLightFlicker>();}
     }
 }

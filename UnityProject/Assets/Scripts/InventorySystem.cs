@@ -74,7 +74,7 @@ namespace Subsistence
 
     public sealed class InventorySystem : MonoBehaviour
     {
-        public const int BackpackSize=24, BeltSize=6, GearSize=5;
+        public const int BackpackSize=30, BeltSize=6, GearSize=5;
         public ItemStack[] Backpack { get; }=new ItemStack[BackpackSize];
         public ItemStack[] Belt { get; }=new ItemStack[BeltSize];
         public ItemStack[] Gear { get; }=new ItemStack[GearSize];
@@ -82,7 +82,7 @@ namespace Subsistence
         public int SelectedBeltSlot { get; private set; }
         public int WorkbenchTier { get; set; }
         public bool InventoryOpen { get; set; }
-        public CharacterModel3D Character { get; set; }
+        public CharacterVisual2D Character { get; set; }
         public float ArmorBullet { get; private set; }
         public float ArmorMelee { get; private set; }
         public float ColdProtection { get; private set; }
@@ -90,6 +90,8 @@ namespace Subsistence
         public string LastCraftStatus { get; private set; }="";
         float statusTimer,stationScan;
         int observedWorkbench=-1;
+        bool blueprintKnown,workbenchIKnown,workbenchIIKnown;
+        public bool HasBlueprint(ItemId id)=>id==ItemId.Blueprint?blueprintKnown:id==ItemId.WorkbenchI?workbenchIKnown:id==ItemId.WorkbenchII?workbenchIIKnown:false;
         public bool IsLootOpen => OpenContainer!=null;
 
         void Update()
@@ -111,7 +113,7 @@ namespace Subsistence
         public void BeginRun()
         {
             Array.Clear(Backpack,0,Backpack.Length);Array.Clear(Belt,0,Belt.Length);Array.Clear(Gear,0,Gear.Length);
-            OpenContainer=null;InventoryOpen=false;WorkbenchTier=0;SelectedBeltSlot=0;
+            OpenContainer=null;InventoryOpen=false;WorkbenchTier=0;SelectedBeltSlot=0;blueprintKnown=false;workbenchIKnown=false;workbenchIIKnown=false;
             Gear[(int)GearSlot.Chest]=new ItemStack(ItemId.FieldJacket,1);
             Gear[(int)GearSlot.Legs]=new ItemStack(ItemId.FieldPants,1);
             Gear[(int)GearSlot.Feet]=new ItemStack(ItemId.WorkBoots,1);
@@ -221,10 +223,27 @@ namespace Subsistence
 
         public bool UseBackpack(int index)=>UseFrom(Backpack,index);
         public bool UseBelt(int index)=>UseFrom(Belt,index);
+        public bool UseQuickMed()
+        {
+            int active=SelectedBeltSlot;
+            if(Belt[active].id==ItemId.Bandage||Belt[active].id==ItemId.Medkit)return UseBelt(active);
+            for(int i=0;i<Belt.Length;i++)if(Belt[i].id==ItemId.Medkit||Belt[i].id==ItemId.Bandage)return UseBelt(i);
+            for(int i=0;i<Backpack.Length;i++)if(Backpack[i].id==ItemId.Medkit||Backpack[i].id==ItemId.Bandage)return UseBackpack(i);
+            Notify("Нет бинтов или аптечек.");return false;
+        }
+        public bool StudyBlueprint(ItemId id)
+        {
+            if(id==ItemId.Blueprint){if(blueprintKnown){Notify("Этот чертёж уже изучен.");return false;}blueprintKnown=true;Notify("Чертёж изучен · открыт рецепт аптечки.");return true;}
+            if(id==ItemId.WorkbenchI){if(workbenchIKnown){Notify("Чертёж верстака I уже изучен.");return false;}workbenchIKnown=true;Notify("Изучен чертёж верстака I · открыты базовые рецепты.");return true;}
+            if(id==ItemId.WorkbenchII){if(workbenchIIKnown){Notify("Чертёж верстака II уже изучен.");return false;}workbenchIIKnown=true;Notify("Изучен чертёж верстака II · открыты продвинутые рецепты.");return true;}
+            return false;
+        }
         bool UseFrom(ItemStack[] slots,int index)
         {
             if(index<0||index>=slots.Length||slots[index].Empty)return false;
             ItemId id=slots[index].id;var state=RunState.Instance;if(state==null)return false;
+            if(id==ItemId.Blueprint||id==ItemId.WorkbenchI||id==ItemId.WorkbenchII)
+            {if(!StudyBlueprint(id))return false;ConsumeOne(slots,index);return true;}
             if(id==ItemId.Water){state.Drink(38);ConsumeOne(slots,index);Notify("Ты выпил воду · жажда восстановлена.");return true;}
             if(id==ItemId.CannedFood){state.Eat(32);ConsumeOne(slots,index);Notify("Ты съел консервы · голод отступил.");return true;}
             if(id==ItemId.Bandage){state.Heal(24);ConsumeOne(slots,index);Notify("Перевязка завершена · +24 здоровья.");return true;}
@@ -248,16 +267,26 @@ namespace Subsistence
         }
         public bool CraftPipe()
         {
-            if(WorkbenchTier<1){Notify("Для трубы нужен верстак I.");return false;}
+            if(!workbenchIKnown){Notify("Нужен изученный чертёж верстака I.");return false;}
+            if(WorkbenchTier<1){Notify("Подойди к верстаку I, чтобы изготовить трубу.");return false;}
             if(Count(ItemId.MetalFragments)<12||Count(ItemId.Cloth)<2){Notify("Нужно 12 металла и 2 ткани.");return false;}
             if(!CanFitCombined(ItemId.Pipe,1)){Notify("Нет места для трубы.");return false;}
             Consume(ItemId.MetalFragments,12);Consume(ItemId.Cloth,2);Add(ItemId.Pipe,1);Notify("Стальная труба изготовлена.");return true;
         }
         public bool CraftAmmo()
         {
+            if(!workbenchIKnown){Notify("Нужен изученный чертёж верстака I.");return false;}
             if(WorkbenchTier<1||Count(ItemId.MetalFragments)<5){Notify("Нужны верстак I и 5 фрагментов металла.");return false;}
             if(!CanFitCombined(ItemId.PistolAmmo,8)){Notify("Нет места для патронов.");return false;}
             Consume(ItemId.MetalFragments,5);Add(ItemId.PistolAmmo,8);Notify("Собрано 8 патронов.");return true;
+        }
+        public bool CraftMedkit()
+        {
+            if(!blueprintKnown||!workbenchIIKnown){Notify("Нужны чертёж аптечки и чертёж верстака II.");return false;}
+            if(WorkbenchTier<2){Notify("Подойди к верстаку II, чтобы собрать аптечку.");return false;}
+            if(Count(ItemId.Cloth)<8||Count(ItemId.CircuitBoard)<2){Notify("Нужно 8 ткани и 2 платы управления.");return false;}
+            if(!CanFitCombined(ItemId.Medkit,1)){Notify("Нет места для аптечки.");return false;}
+            Consume(ItemId.Cloth,8);Consume(ItemId.CircuitBoard,2);Add(ItemId.Medkit,1);Notify("Аптечка изготовлена.");return true;
         }
         public int Count(ItemId id){int total=0;foreach(var s in Backpack)if(s.id==id)total+=s.count;foreach(var s in Belt)if(s.id==id)total+=s.count;foreach(var s in Gear)if(s.id==id)total+=s.count;return total;}
         void Consume(ItemId id,int amount){for(int i=0;i<Backpack.Length&&amount>0;i++)if(Backpack[i].id==id){int n=Math.Min(amount,Backpack[i].count);Backpack[i].count-=n;amount-=n;if(Backpack[i].count<=0)Backpack[i].Clear();}for(int i=0;i<Belt.Length&&amount>0;i++)if(Belt[i].id==id){int n=Math.Min(amount,Belt[i].count);Belt[i].count-=n;amount-=n;if(Belt[i].count<=0)Belt[i].Clear();}}

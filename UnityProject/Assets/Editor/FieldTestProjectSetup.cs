@@ -18,7 +18,7 @@ namespace Subsistence.EditorTools
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             PlayerSettings.companyName="Subsistence Studio";
             PlayerSettings.productName="SUBSISTENCE";
-            PlayerSettings.bundleVersion="alpha-1.1.1";
+            PlayerSettings.bundleVersion="alpha-1.2.0";
             PlayerSettings.defaultScreenWidth=1280;
             PlayerSettings.defaultScreenHeight=720;
             PlayerSettings.runInBackground=true;

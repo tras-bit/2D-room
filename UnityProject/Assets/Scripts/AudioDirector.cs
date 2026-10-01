@@ -9,7 +9,7 @@ namespace Subsistence
         public static AudioDirector Instance { get; private set; }
         public float MasterVolume { get; private set; } = .72f;
         public float AmbienceVolume { get; private set; } = .30f;
-        public float MusicVolume { get; private set; } = .23f;
+        public float MusicVolume { get; private set; } = .46f;
         AudioSource ambience;
         AudioSource music;
         AudioSource effects;
@@ -21,7 +21,14 @@ namespace Subsistence
             Instance = this;
             MasterVolume=PlayerPrefs.GetFloat("Subsistence.MasterVolume",.72f);
             AmbienceVolume=PlayerPrefs.GetFloat("Subsistence.AmbienceVolume",.30f);
-            MusicVolume=PlayerPrefs.GetFloat("Subsistence.MusicVolume",.23f);
+            if(PlayerPrefs.GetInt("Subsistence.MusicVolumeDoubled",0)==0)
+            {
+                float previousMusic=PlayerPrefs.GetFloat("Subsistence.MusicVolume",.23f);
+                PlayerPrefs.SetFloat("Subsistence.MusicVolume",Mathf.Clamp01(previousMusic*2f));
+                PlayerPrefs.SetInt("Subsistence.MusicVolumeDoubled",1);
+                PlayerPrefs.Save();
+            }
+            MusicVolume=PlayerPrefs.GetFloat("Subsistence.MusicVolume",.46f);
             AudioListener.volume=MasterVolume;
             DontDestroyOnLoad(gameObject);
             Load("ambience", "ambience_service_tunnel");
