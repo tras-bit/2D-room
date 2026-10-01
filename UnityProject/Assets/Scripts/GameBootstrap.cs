@@ -2,18 +2,25 @@ using UnityEngine;
 
 namespace Subsistence
 {
-    /// <summary>Bootstraps a strictly 2D, pixel-art side-view survival scene when the active scene is empty.</summary>
     public sealed class GameBootstrap : MonoBehaviour
     {
         static Transform world;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void StartFieldTest(){if(FindObjectOfType<GameBootstrap>()==null){var root=new GameObject("SUBSISTENCE · Pixel Side-View");root.AddComponent<GameBootstrap>();}}
+        static void StartFieldTest(){if(FindObjectOfType<GameBootstrap>()==null){var root=new GameObject("SUBSISTENCE · URP 2D Backrooms");root.AddComponent<GameBootstrap>();}}
 
         void Awake()
         {
             Application.targetFrameRate=60;
-            world=new GameObject("2D Pixel World · Backrooms levels").transform;world.SetParent(transform,false);
-            WorldBuilder2D.Build(world);CreateCamera();CreatePlayer();CreateContainers();CreateWorkbenches();CreateWatchers();CreateTrader();CreateElevators();
+            QualitySettings.vSyncCount=1;
+            world=new GameObject("2D Cinematic World · Backrooms levels").transform;world.SetParent(transform,false);
+            CreateCamera();
+            Camera cam=Camera.main??FindObjectOfType<Camera>();
+            if(cam!=null)GraphicsBootstrap2D.Configure(cam,world);
+            WorldBuilder2D.Build(world);
+            if(cam!=null)ParallaxSystem2D.Build(world,cam);
+            WorldLighting2D.Build(world);
+            CreatePlayer();CreateContainers();CreateWorkbenches();CreateWatchers();CreateTrader();CreateElevators();
+            RendererLibrary2D.PrepareRenderers(world);
             gameObject.AddComponent<RunState>();gameObject.AddComponent<AudioDirector>();gameObject.AddComponent<GameHUD>();
         }
 
@@ -21,8 +28,8 @@ namespace Subsistence
         {
             Camera cam=Camera.main;
             if(cam==null){var go=new GameObject("Main Camera · Orthographic");cam=go.AddComponent<Camera>();go.tag="MainCamera";}
-            cam.orthographic=true;cam.orthographicSize=5.35f;cam.nearClipPlane=.1f;cam.farClipPlane=30f;
-            cam.backgroundColor=new Color(.055f,.066f,.06f);cam.clearFlags=CameraClearFlags.SolidColor;
+            cam.orthographic=true;cam.orthographicSize=5.35f;cam.nearClipPlane=.1f;cam.farClipPlane=60f;
+            cam.backgroundColor=new Color(.045f,.050f,.043f);cam.clearFlags=CameraClearFlags.SolidColor;
             cam.transform.position=new Vector3(-10f,3.45f,-10f);cam.transform.rotation=Quaternion.identity;
             if(cam.GetComponent<CameraFollow2D>()==null)cam.gameObject.AddComponent<CameraFollow2D>();
             if(FindObjectOfType<AudioListener>()==null)cam.gameObject.AddComponent<AudioListener>();
@@ -30,7 +37,7 @@ namespace Subsistence
 
         void CreatePlayer()
         {
-            var go=new GameObject("Survivor · 2D Pixel Player");go.transform.SetParent(world,false);go.transform.position=new Vector3(-19f,0,0);
+            var go=new GameObject("Survivor · 2D Painted Player");go.transform.SetParent(world,false);go.transform.position=new Vector3(-19f,0,0);
             var body=go.AddComponent<Rigidbody2D>();body.gravityScale=3.1f;body.freezeRotation=true;body.interpolation=RigidbodyInterpolation2D.Interpolate;body.collisionDetectionMode=CollisionDetectionMode2D.Continuous;
             var collider=go.AddComponent<BoxCollider2D>();collider.size=new Vector2(.60f,1.48f);collider.offset=new Vector2(0,.74f);
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Survivor(0);renderer.sortingOrder=10;
@@ -39,7 +46,6 @@ namespace Subsistence
 
         void CreateContainers()
         {
-            // Sparse, non-blocking supply finds preserve Level 0's empty, resource-starved entry-level feeling.
             MakeContainer(-9f,1,"LEVEL 0 · ПОВРЕЖДЁННАЯ КОРОБКА");
             MakeContainer(18f,1,"LEVEL 0 · ПОТЕРЯННАЯ ПОСЫЛКА");
             MakeContainer(62f,2,"LEVEL 0 · ЗАКЛЕЕННАЯ КОРОБКА С ПРИПАСАМИ");
@@ -68,20 +74,8 @@ namespace Subsistence
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Watcher(0);renderer.sortingOrder=10;
             go.AddComponent<PixelFrameAnimator>();go.AddComponent<CharacterVisual2D>();go.AddComponent<WatcherAI>();
         }
-        void CreateTrader()
-        {
-            var go=new GameObject("Level 0 · Manila Room attendant");go.transform.SetParent(world,false);go.transform.position=new Vector3(39f,0,0);
-            go.AddComponent<TraderNPC>().Initialize();
-        }
-        void CreateElevators()
-        {
-            // An anomalous twin-lift transition sits beyond the yellow maze and arrives at Level 1.
-            MakeElevator(1,87f,116f);MakeElevator(2,88.5f,116.5f);
-        }
-        void MakeElevator(int number,float x,float arrivalX)
-        {
-            var go=new GameObject("Level 0 · elevator "+number+" to Level 1");go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);
-            go.AddComponent<LevelElevator>().Initialize(number,1,arrivalX);
-        }
+        void CreateTrader(){var go=new GameObject("Level 0 · Manila Room attendant");go.transform.SetParent(world,false);go.transform.position=new Vector3(39f,0,0);go.AddComponent<TraderNPC>().Initialize();}
+        void CreateElevators(){MakeElevator(1,87f,116f);MakeElevator(2,88.5f,116.5f);}
+        void MakeElevator(int number,float x,float arrivalX){var go=new GameObject("Level 0 · elevator "+number+" to Level 1");go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);go.AddComponent<LevelElevator>().Initialize(number,1,arrivalX);}
     }
 }

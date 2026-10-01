@@ -217,7 +217,7 @@ namespace Subsistence
         static void AddLightFlicker(Transform parent,Vector2 position,Color color)
         {
             var go=new GameObject("Fluorescent light · unstable buzz");go.transform.SetParent(parent,false);go.transform.position=new Vector3(position.x,position.y,0);go.transform.localScale=new Vector3(2.15f,.32f,1f);
-            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Block(Color.white);renderer.color=color;renderer.sortingOrder=-1;go.AddComponent<PixelLightFlicker>();
+            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Block(Color.white);renderer.color=new Color(color.r,color.g,color.b,color.a*.55f);renderer.sortingOrder=-1;var pulse=go.AddComponent<PixelLightFlicker>();pulse.SetIntensityScale(.78f);
         }
     }
 }

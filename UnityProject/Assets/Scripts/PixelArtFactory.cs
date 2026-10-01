@@ -9,6 +9,7 @@ namespace Subsistence
         static Color32 C(byte r, byte g, byte b, byte a = 255) => new Color32(r, g, b, a);
         static readonly Color32 Clear = new Color32(0, 0, 0, 0);
         static readonly System.Collections.Generic.Dictionary<string,Sprite> cache=new System.Collections.Generic.Dictionary<string,Sprite>();
+        static readonly System.Collections.Generic.Dictionary<Texture2D,Texture2D> generatedNormals=new System.Collections.Generic.Dictionary<Texture2D,Texture2D>();
 
         static Sprite AtlasSlice(string name,int x,int top,int width,int height,float pixelsPerUnit)
         {
@@ -20,7 +21,10 @@ namespace Subsistence
             const int detailScale=2;
             int cropWidth=width*detailScale,cropHeight=height*detailScale;
             var rect=new Rect(x*detailScale,atlas.height-(top+height)*detailScale,cropWidth,cropHeight);
-            var sprite=Sprite.Create(atlas,rect,new Vector2(.5f,0f),pixelsPerUnit*detailScale,0,SpriteMeshType.FullRect);
+            Texture2D slice=CropTexture(atlas,rect);
+            Texture2D normal=BuildNormalMap(slice);
+            SecondarySpriteTexture[] secondary=normal!=null?new[]{new SecondarySpriteTexture{name="_NormalMap",texture=normal}}:Array.Empty<SecondarySpriteTexture>();
+            var sprite=Sprite.Create(slice,new Rect(0,0,slice.width,slice.height),new Vector2(.5f,0f),pixelsPerUnit*detailScale,0,SpriteMeshType.FullRect,Vector4.zero,false,secondary);
             sprite.name=name;cache[key]=sprite;return sprite;
         }
 
@@ -40,7 +44,6 @@ namespace Subsistence
                     Color32 color=painted[y*paintWidth+x];
                     for(int sy=0;sy<detailScale;sy++)for(int sx=0;sx<detailScale;sx++)
                         pixels[(y*detailScale+sy)*width+x*detailScale+sx]=color;
-                    // Fine, deterministic cloth grain inside jackets and trousers; outline and face remain crisp.
                     int hash=(x*37+y*61+name.Length*13)&15;
                     if(color.a>0&&y>=6&&y<=34&&x>=7&&x<=25&&hash<3)
                     {
@@ -58,7 +61,35 @@ namespace Subsistence
             };
             texture.SetPixels32(pixels);
             texture.Apply(false, true);
-            return Sprite.Create(texture, new Rect(0, 0, width, height), pivot, pixelsPerUnit, 0, SpriteMeshType.FullRect);
+            Texture2D normal=BuildNormalMap(texture);
+            SecondarySpriteTexture[] secondary=normal!=null?new[]{new SecondarySpriteTexture{name="_NormalMap",texture=normal}}:Array.Empty<SecondarySpriteTexture>();
+            return Sprite.Create(texture, new Rect(0, 0, width, height), pivot, pixelsPerUnit, 0, SpriteMeshType.FullRect,Vector4.zero,false,secondary);
+        }
+
+        static Texture2D CropTexture(Texture2D source,Rect rect)
+        {
+            RenderTexture rt=RenderTexture.GetTemporary(Mathf.RoundToInt(rect.width),Mathf.RoundToInt(rect.height),0,RenderTextureFormat.Default,RenderTextureReadWrite.Default);
+            Graphics.Blit(source,rt,new Vector2(rect.width/source.width,rect.height/source.height),new Vector2(rect.x/source.width,rect.y/source.height));
+            RenderTexture prev=RenderTexture.active;RenderTexture.active=rt;
+            Texture2D copy=new Texture2D(rt.width,rt.height,TextureFormat.RGBA32,false){filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp,name=source.name+"_crop"};
+            copy.ReadPixels(new Rect(0,0,rt.width,rt.height),0,0);copy.Apply(false,true);
+            RenderTexture.active=prev;RenderTexture.ReleaseTemporary(rt);return copy;
+        }
+
+        static Texture2D BuildNormalMap(Texture2D source)
+        {
+            if(source==null)return null;
+            if(generatedNormals.TryGetValue(source,out var cached))return cached;
+            int w=source.width,h=source.height;Color[] src=source.GetPixels();Color[] dst=new Color[src.Length];const float bump=2.2f;
+            for(int y=0;y<h;y++)for(int x=0;x<w;x++)
+            {
+                int xm=x>0?x-1:w-1,xp=x<w-1?x+1:0,ym=y>0?y-1:h-1,yp=y<h-1?y+1:0;
+                float l=src[y*w+xm].grayscale*src[y*w+xm].a,r=src[y*w+xp].grayscale*src[y*w+xp].a,d=src[ym*w+x].grayscale*src[ym*w+x].a,u=src[yp*w+x].grayscale*src[yp*w+x].a;
+                Vector3 n=Vector3.Normalize(new Vector3((r-l)*bump,(u-d)*bump,1f));
+                dst[y*w+x]=new Color(n.x*.5f+.5f,n.y*.5f+.5f,n.z,src[y*w+x].a);
+            }
+            Texture2D normal=new Texture2D(w,h,TextureFormat.RGBA32,false,true){filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp,name=source.name+"_Normal"};
+            normal.SetPixels(dst);normal.Apply(false,true);generatedNormals[source]=normal;return normal;
         }
 
         static void Rect(Color32[] pixels, int width, int height, int x, int y, int w, int h, Color32 color)
@@ -385,7 +416,9 @@ namespace Subsistence
         {
             string key="item_world_"+id;if(cache.TryGetValue(key,out var found))return found;
             Texture2D tex=ItemIconFactory.Get(id);
-            var sprite=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,0),48f,0,SpriteMeshType.FullRect);
+            Texture2D normal=BuildNormalMap(tex);
+            SecondarySpriteTexture[] secondary=normal!=null?new[]{new SecondarySpriteTexture{name="_NormalMap",texture=normal}}:Array.Empty<SecondarySpriteTexture>();
+            var sprite=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,0),48f,0,SpriteMeshType.FullRect,Vector4.zero,false,secondary);
             cache[key]=sprite;return sprite;
         }
         public static Sprite MenuCorridor()

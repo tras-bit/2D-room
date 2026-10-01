@@ -6,7 +6,7 @@
 
 1. Установи Unity Hub и [Unity Editor 2022.3.62f2](unityhub://2022.3.62f2/7670c08855a9).
 2. В Unity Hub выбери **Add → Add project from disk** и укажи папку `UnityProject`.
-3. Дождись импорта пакетов из `Packages/manifest.json`. При первом открытии Editor-скрипт создаёт сцену `Assets/Scenes/FieldTest.unity` и добавляет её в Build Settings.
+3. Дождись импорта пакетов из `Packages/manifest.json` (в том числе URP 14.0.11). При первом открытии Editor-скрипты создают сцену `Assets/Scenes/FieldTest.unity`, URP-ассеты в `Assets/Settings/` и добавляют сцену в Build Settings.
 4. Нажми **Play ▶** и открой вкладку **Game**. В главном меню выбери **«НАЧАТЬ ИГРУ» → «ВЫБОР УРОВНЯ» → «НАЧАТЬ LEVEL 0»**. Это локальная одиночная игра; онлайн-серверов и сетевых пассажиров нет.
 
 Сцена, персонаж, комнаты и контейнеры собираются игровым кодом при запуске. Перетаскивать объекты на сцену вручную не нужно.
@@ -49,7 +49,8 @@
 
 - `Assets/Scripts/WorldBuilder2D.cs`, `PixelArtFactory.cs`, `CharacterVisual2D.cs` — построение side-view мира и игровые спрайты.
 - `Assets/Resources/PixelArt/individual_models.png` — отдельный атлас выжившего, наблюдателя, торговца, двух состояний дверей лифта и зелёной карты; он собирается генератором и открывается как проект `ArtSource/individual_models.piskel` для редактирования в Piskel.
-- `Assets/Scripts/CameraFollow2D.cs`, `PixelFrameAnimator.cs` — ортографическая камера и спрайтовая анимация.
+- `Assets/Scripts/CameraFollow2D.cs`, `PlayerController.cs` — сглаженная ортографическая камера, плавное движение по Rigidbody2D и фонарь-URP 2D light; `PixelFrameAnimator.cs` — спрайтовая анимация.
+- `Assets/Scripts/GraphicsBootstrap2D.cs`, `WorldLighting2D.cs`, `RendererLibrary2D.cs`, `ParallaxSystem2D.cs` — URP 2D Renderer, свет, тени, parallax-слои и runtime normal maps; подробнее см. `VISUAL_PIPELINE_GUIDE.md`.
 - `Assets/Scripts/InventorySystem.cs`, `GameHUD.cs` — 30 ячеек рюкзака, пояс из шести ячеек, чертежи, крафт и Rust-подобный HUD.
 - `Assets/Resources/Art/menu_backrooms.png` и `menu_maintenance_backrooms.png` — полноэкранные атмосферные фоны для главного меню/прочих экранов и настроек/выбора уровня. Остальные старые изображения в `Assets/Resources/Art/` мир не загружает.
 - `Assets/Resources/Audio/` — музыка, звуковые эффекты и отдельный низкий гул флуоресцентных ламп Level 0; гул затихает после перехода на Level 1.
