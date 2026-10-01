@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Subsistence.EditorTools
 {
@@ -42,8 +43,8 @@ namespace Subsistence.EditorTools
                 if(so.FindProperty("m_MSAA")!=null)so.FindProperty("m_MSAA").intValue=2;
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(pipelineAsset);
-                GraphicsSettings.defaultRenderPipeline=pipelineAsset;
-                QualitySettings.renderPipeline=pipelineAsset;
+                GraphicsSettings.defaultRenderPipeline=(RenderPipelineAsset)pipelineAsset;
+                QualitySettings.renderPipeline=(RenderPipelineAsset)pipelineAsset;
             }
             AssetDatabase.SaveAssets();AssetDatabase.Refresh();
         }
