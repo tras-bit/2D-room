@@ -68,7 +68,7 @@ namespace Subsistence
                 float size=.035f+(i%3)*.012f;
                 var mote=SoftRect(parent,"Level 0 · drifting dust mote",new Vector2(x,y),new Vector2(size,size),
                     new Color(.84f,.76f,.56f,.22f+(i%3)*.035f),2);
-                mote.AddComponent<AmbientDust2D>().Initialize(i);
+                mote.gameObject.AddComponent<AmbientDust2D>().Initialize(i);
             }
         }
 

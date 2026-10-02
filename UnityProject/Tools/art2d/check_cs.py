@@ -156,6 +156,17 @@ def main() -> int:
     if "BuildingSystem2D.ClearPlayerPlacedObjects();" not in hud:
         fail("GameHUD.StartRun must clear player-placed building objects")
 
+    world_builder_path = SCRIPTS / "WorldBuilder2D.cs"
+    world_builder = world_builder_path.read_text(encoding="utf-8") if world_builder_path.exists() else ""
+    if not re.search(r"\b\w+\.gameObject\.AddComponent<AmbientDust2D>\(\)", world_builder):
+        fail("ambient dust component must be added through its GameObject")
+
+    icon_factory_path = SCRIPTS / "ItemIconFactory.cs"
+    icon_factory = icon_factory_path.read_text(encoding="utf-8") if icon_factory_path.exists() else ""
+    procedural_body = extract_body(icon_factory, "public static Texture2D Procedural")
+    if not re.search(r"\b(?:var|Texture2D)\s+texture\s*=\s*new\s+Texture2D", procedural_body):
+        fail("ItemIconFactory.Procedural must declare its generated Texture2D")
+
     icon_body = extract_body(factory, "public static string IconName")
     icon_names = set(re.findall(r'return\s+"([a-z0-9_]+)"\s*;', icon_body))
     inv_path = SCRIPTS / "InventorySystem.cs"

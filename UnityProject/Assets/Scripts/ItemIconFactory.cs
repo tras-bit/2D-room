@@ -283,7 +283,7 @@ namespace Subsistence
                     DrawRect(18,17,28,30,dark);DrawRect(20,15,24,30,main);DrawRect(23,19,18,4,light);DrawRect(23,27,18,3,shade);DrawRect(23,36,13,3,shade);
                     break;
             }
-            texture=new Texture2D(S,S,TextureFormat.RGBA32,false)
+            var texture=new Texture2D(S,S,TextureFormat.RGBA32,false)
             {filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp,hideFlags=HideFlags.HideAndDontSave,name="ItemIcon_"+id};
             texture.SetPixels32(pixels);texture.Apply(false,true);proceduralCache[id]=texture;return texture;
         }

@@ -364,7 +364,7 @@ namespace Subsistence
             float sy=portraitY+portraitH+8*uiScale;
             Label("ЗАЩИТА  /  ЭКИПИРОВКА",R(x+11*uiScale,sy,w-22*uiScale,15*uiScale),tiny,muted);
             ArmorLine(x+11*uiScale,sy+20*uiScale,w-22*uiScale,"ПУЛИ",bag.ArmorBullet);ArmorLine(x+11*uiScale,sy+39*uiScale,w-22*uiScale,"БЛИЖНИЙ БОЙ",bag.ArmorMelee);ArmorLine(x+11*uiScale,sy+58*uiScale,w-22*uiScale,"ХОЛОД",bag.ColdProtection);ArmorLine(x+11*uiScale,sy+77*uiScale,w-22*uiScale,"РАДИАЦИЯ",bag.RadiationProtection);
-            Label("ALPHA 1.4.0-rc1  ·  ОДИНОЧНАЯ СМЕНА",R(x+10*uiScale,y+h-19*uiScale,w-20*uiScale,13*uiScale),tiny,muted);
+            Label("ALPHA 1.4.0-rc1.1  ·  ОДИНОЧНАЯ СМЕНА",R(x+10*uiScale,y+h-19*uiScale,w-20*uiScale,13*uiScale),tiny,muted);
         }
         void DrawGearSlot(int slotIndex,string label,Rect rect,int displayIndex)
         {
