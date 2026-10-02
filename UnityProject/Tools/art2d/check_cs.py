@@ -134,6 +134,16 @@ def main() -> int:
         if name not in tile_names:
             fail(f"tile texture missing: Art/Tiles/{name}.png")
 
+    # Rust-style run start: only abandoned loot caches may be seeded by the
+    # bootstrap; player workbenches/base storage must be crafted and placed.
+    bootstrap_path = SCRIPTS / "GameBootstrap.cs"
+    if bootstrap_path.exists():
+        bootstrap = bootstrap_path.read_text(encoding="utf-8")
+        if "CreateWorkbenches(" in bootstrap or "MakeBench(" in bootstrap or "AddComponent<WorkbenchStation>" in bootstrap:
+            fail("GameBootstrap must not spawn a pre-placed workbench")
+        if "CreateHomeStorage(" in bootstrap or "AddComponent<HomeStorage" in bootstrap:
+            fail("GameBootstrap must not spawn player home storage")
+
     icon_body = extract_body(factory, "public static string IconName")
     icon_names = set(re.findall(r'return\s+"([a-z0-9_]+)"\s*;', icon_body))
     inv_path = SCRIPTS / "InventorySystem.cs"

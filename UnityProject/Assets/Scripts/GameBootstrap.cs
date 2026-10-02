@@ -19,7 +19,7 @@ namespace Subsistence
             WorldBuilder2D.Build(world);
             if(cam!=null)ParallaxSystem2D.Build(world,cam);
             WorldLighting2D.Build(world);
-            CreatePlayer();CreateContainers();CreateWorkbenches();CreateWatchers();CreateTrader();CreateElevators();
+            CreatePlayer();CreateSupplyCaches();CreateWatchers();CreateTrader();CreateElevators();
             RendererLibrary2D.PrepareRenderers(world);
             gameObject.AddComponent<RunState>();gameObject.AddComponent<AudioDirector>();gameObject.AddComponent<GameHUD>();
         }
@@ -44,26 +44,20 @@ namespace Subsistence
             go.AddComponent<PixelFrameAnimator>();go.AddComponent<CharacterVisual2D>();go.AddComponent<InventorySystem>();go.AddComponent<PlayerController>();
         }
 
-        void CreateContainers()
+        // World loot only: these abandoned caches are not player storage. The
+        // run deliberately starts without a player base or a placed workbench.
+        void CreateSupplyCaches()
         {
-            MakeContainer(-9f,1,"LEVEL 0 · ПОВРЕЖДЁННАЯ КОРОБКА");
-            MakeContainer(18f,1,"LEVEL 0 · ПОТЕРЯННАЯ ПОСЫЛКА");
-            MakeContainer(62f,2,"LEVEL 0 · ЗАКЛЕЕННАЯ КОРОБКА С ПРИПАСАМИ");
+            MakeSupplyCache(-9f,1,"LEVEL 0 · ЗАБРОШЕННЫЙ ЯЩИК С ПРИПАСАМИ");
+            MakeSupplyCache(18f,1,"LEVEL 0 · ПОТЕРЯННАЯ ПОСЫЛКА");
+            MakeSupplyCache(62f,2,"LEVEL 0 · ЗАПЕЧАТАННЫЙ ЛУТ-КЕЙС");
         }
-        void MakeContainer(float x,int tier,string name)
+        void MakeSupplyCache(float x,int tier,string name)
         {
             var go=new GameObject(name+" · TIER "+tier);go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);
             var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Crate2D(tier);renderer.sortingOrder=7;
             var collider=go.AddComponent<BoxCollider2D>();collider.size=new Vector2(1.2f,1.0f);collider.offset=new Vector2(0,.5f);
             go.AddComponent<LootContainer>().Initialize(tier,name);
-        }
-        void CreateWorkbenches(){MakeBench(137f,1,"LEVEL 1 · FOUND WORKTABLE");MakeBench(191f,2,"LEVEL 1 · SERVICE BENCH");}
-        void MakeBench(float x,int tier,string name)
-        {
-            var go=new GameObject(name);go.transform.SetParent(world,false);go.transform.position=new Vector3(x,0,0);
-            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=PixelArtFactory.Workbench2D(tier);renderer.sortingOrder=6;
-            var collider=go.AddComponent<BoxCollider2D>();collider.size=new Vector2(1.9f,.86f);collider.offset=new Vector2(0,.43f);collider.isTrigger=true;
-            go.AddComponent<WorkbenchStation>().Initialize(tier,name);
         }
         void CreateWatchers(){CreateWatcherAt(153f,"LEVEL 1 · WATCHER IN THE DARK");CreateWatcherAt(198f,"LEVEL 1 · WATCHER NEAR THE SERVICE BAY");}
         void CreateWatcherAt(float x,string name)

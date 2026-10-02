@@ -3,9 +3,9 @@ using UnityEngine;
 namespace Subsistence
 {
     /// <summary>
-    /// Builds the yellow, non-linear-feeling Level 0 lobby and its industrial
-    /// Level 1 destination in strict 2D. Pixel-art tiles span each whole level
-    /// so their repeats stay continuous across the dressing sections.
+    /// Builds only the Backrooms environment in strict 2D. It never creates a
+    /// player base, home storage or workbench; those belong to player building.
+    /// Pixel-art tiles span each level so their repeats stay continuous.
     /// </summary>
     public static class WorldBuilder2D
     {

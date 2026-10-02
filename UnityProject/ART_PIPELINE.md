@@ -59,7 +59,7 @@ When a prop or material source is not ready, the build uses a palette-locked pro
 
 - Character art is packed from source PNGs; the five survivor motion poses, two Watcher poses and Trader are present.
 - All seven repeating environment materials now have source pixel art: three Level 0 surfaces, three Level 1 surfaces and the Manila Room wallpaper. Level 1 wall processing disables dithering and applies a 7×7 median cleanup to keep its broad panel seams and stains readable without competing with characters.
-- Three of 14 props are newly sourced and integrated: crate tier 1, workbench tier 1 and the door. The remaining 11 props use same-palette fallbacks; replacement PNGs can be added under `ArtSource/raw/`. The rejected wide elevator sketch is not used; closed/open elevator art still needs portrait-shaped sprites.
+- Three of 14 props are in the atlas: crate tier 1, workbench tier 1 and the door. The workbench sprite is only an available asset; no station is spawned at run start. The level starts without a player base or home storage. Three fixed Level 0 crates are world scavenging caches, not a player's storage box. The remaining 11 props use same-palette fallbacks; the rejected wide elevator sketch is not used, so closed/open elevator art still needs portrait-shaped sprites.
 - Inventory icons currently use the in-game procedural pictogram fallback (0/26 painted). The source folder is ready for 64×64 item icons.
 - Gear-specific survivor variants are not yet authored; the game safely uses the base character until those frames are added.
 - Source-art scene mockups for Level 0 and Level 1 are saved under `docs/preview/`.
