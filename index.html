@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171813">
+  <meta name="description" content="Локальный бриф на 50 вопросов для развития SUBSISTENCE. Ответы сохраняются в браузере и копируются вручную.">
+  <title>SUBSISTENCE — проектный бриф</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#questions">К вопросам</a>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="SUBSISTENCE, начало страницы">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="brand-name">SUBSISTENCE<span>PROJECT / BRIEF 02</span></span>
+    </a>
+    <div class="top-meta"><span class="signal-dot"></span> GAME DESIGN INTAKE <b>·</b> UNITY 2022.3.62f2</div>
+    <div class="save-status" id="saveStatus" role="status" aria-live="polite"><span class="save-check">✓</span><span>Черновик готов</span></div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>СОБЕРЁМ ЗАМЫСЕЛ В ПЛАН</span><span class="eyebrow-line"></span><span>50 ВОПРОСОВ</span></div>
+        <h1>Продумай мир.<br><em>Задай правила.</em></h1>
+        <p class="hero-lede">Подробный бриф для развития <strong>SUBSISTENCE</strong> — 2D survival-хоррора с боковым видом, выживанием и тревожными коридорами Backrooms.</p>
+        <div class="hero-tags"><span>2D SIDE-VIEW</span><span>SURVIVAL HORROR</span><span>РУЧНОЕ КОПИРОВАНИЕ</span></div>
+        <div class="privacy-note"><span aria-hidden="true">▣</span> Ответы остаются в этом браузере. Формы отправки и сетевой передачи нет.</div>
+      </div>
+      <div class="hero-scene" aria-label="Схематичный коридор с дверью и мигающей лампой">
+        <div class="scene-grid"></div><div class="scene-ceiling"></div><div class="scene-wall"></div>
+        <div class="scene-light"></div><div class="scene-door"><span class="door-panel"></span><i></i></div>
+        <div class="scene-floor"></div><div class="scene-person"><i></i><b></b></div>
+        <div class="scene-stamp"><span class="signal-dot"></span> SIGNAL FOUND <b>04:17 AM</b></div>
+        <div class="scene-caption">НЕ ВСЕ ВЫХОДЫ<br>ВЕДУТ НАРУЖУ</div>
+        <div class="scene-coordinate">LEVEL 0 / THE LOBBY<br>51°30'26.4"N · 00°07'39.1"W</div>
+      </div>
+    </section>
+
+    <section class="workbench" aria-label="Опросник проекта">
+      <div class="question-column">
+        <div class="form-heading">
+          <div><div class="kicker">ТВОЯ ИГРА · ТВОИ РЕШЕНИЯ</div><h2>Собираем основу</h2></div>
+          <p>Можно отвечать коротко, выбирать подсказки или пропускать вопросы. Черновик сохраняется автоматически.</p>
+        </div>
+
+        <div class="toolbar" aria-label="Поиск и фильтры">
+          <label class="search-box"><span aria-hidden="true">⌕</span><input id="searchQuestions" type="search" placeholder="Найти вопрос или ответ…" autocomplete="off"><kbd>/</kbd></label>
+          <div class="filter-group" role="group" aria-label="Показать вопросы">
+            <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">Все <span>50</span></button>
+            <button class="filter-button" type="button" data-filter="empty" aria-pressed="false">Пустые</button>
+            <button class="filter-button" type="button" data-filter="answered" aria-pressed="false">Отвеченные</button>
+          </div>
+        </div>
+
+        <nav class="section-nav" id="sectionNav" aria-label="Разделы брифа"></nav>
+        <div class="focus-bar" id="focusBar" hidden>
+          <button class="mini-button" id="focusPrev" type="button" aria-label="Предыдущий вопрос">←</button>
+          <span id="focusPosition">Вопрос 1 из 50</span>
+          <button class="mini-button" id="focusNext" type="button" aria-label="Следующий вопрос">→</button>
+          <button class="exit-focus" id="exitFocus" type="button">Выйти из режима</button>
+        </div>
+        <div class="results-line"><span id="resultCount">50 вопросов</span><button class="text-button" id="focusToggle" type="button">Отвечать по одному <span>↗</span></button></div>
+        <div id="questions" class="questions-list"></div>
+        <div class="end-note"><span class="signal-dot"></span> ЭТО ЧЕРНОВИК. ЕГО МОЖНО ПРАВИТЬ И ПЕРЕКОПИРОВАТЬ В ЛЮБОЙ МОМЕНТ.</div>
+      </div>
+
+      <aside class="side-column" aria-label="Прогресс и инструменты">
+        <section class="side-card progress-card">
+          <div class="card-topline"><span>ТВОЙ БРИФ</span><span class="pulse-dot"></span></div>
+          <div class="progress-number"><strong id="answeredCount">00</strong><span>/ 50</span></div>
+          <p>ответов заполнено</p>
+          <div class="progress-track"><span id="progressFill"></span></div>
+          <div class="progress-bottom"><span>ГОТОВНОСТЬ</span><strong id="progressPercent">0%</strong></div>
+          <div class="section-progress" id="sectionProgress"></div>
+        </section>
+
+        <section class="side-card actions-card">
+          <div class="card-topline">КОПИРОВАНИЕ И ЭКСПОРТ</div>
+          <h3>Забери ответы с собой.</h3>
+          <p>Ничего никуда не отправляется. Скопируй текст или скачай файл и перенеси ответы вручную.</p>
+          <label class="check-row"><input id="onlyFilled" type="checkbox"><span class="custom-check"></span>Включать только заполненные</label>
+          <button class="primary-button" id="copyAll" type="button"><span>Скопировать бриф</span><b>↗</b></button>
+          <button class="secondary-button" id="copySection" type="button"><span>Скопировать раздел</span><b>⌘</b></button>
+          <div class="download-row">
+            <button class="download-button" id="downloadTxt" type="button">.TXT <span>↓</span></button>
+            <button class="download-button" id="downloadMd" type="button">.MD <span>↓</span></button>
+            <button class="download-button" id="downloadJson" type="button">.JSON <span>↓</span></button>
+          </div>
+          <label class="import-button" for="importJson">Импортировать резервную копию <span>↑</span><input id="importJson" type="file" accept="application/json,.json"></label>
+          <button class="reset-button" id="resetForm" type="button">Сбросить все ответы</button>
+          <div class="copy-feedback" id="feedback" aria-live="polite"></div>
+        </section>
+
+        <section class="side-card helper-card">
+          <div class="helper-icon">✳</div><div><h3>Не нужно знать всё</h3><p>Ответы можно оставлять предварительными. Уточнения, варианты и сомнения тоже полезны для брифа.</p></div>
+        </section>
+        <section class="side-card helper-card reference-card">
+          <div class="helper-icon">↗</div><div><h3>Ориентир по графике</h3><p>Остаёмся в боковом 2D-пиксель-арте. С референса берём качество персонажа, не его фон.</p></div>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="footer"><span>SUBSISTENCE <i>—</i> PROJECT BRIEF</span><span>LOCAL DRAFT · NO SUBMISSION</span><span>UNITY 2022.3.62f2</span></footer>
+  </main>
+
+  <dialog id="manualCopyDialog" class="copy-dialog" aria-labelledby="dialogTitle">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-top"><div><div class="kicker">РУЧНОЕ КОПИРОВАНИЕ</div><h2 id="dialogTitle">Текст готов</h2></div><button class="dialog-close" value="close" aria-label="Закрыть">×</button></div>
+      <p>Выдели текст и скопируй его сочетанием <kbd>Ctrl</kbd> + <kbd>C</kbd> (или <kbd>⌘</kbd> + <kbd>C</kbd> на Mac).</p>
+      <textarea id="manualCopyText" readonly spellcheck="false"></textarea>
+      <div class="dialog-actions"><button id="selectCopyText" class="primary-button" type="button">Выделить весь текст</button><button class="secondary-button" value="close">Готово</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

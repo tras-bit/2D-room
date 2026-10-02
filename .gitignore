@@ -1,0 +1,18 @@
+/.tools/
+__pycache__/
+*.py[cod]
+
+# Unity-generated files (keep source, settings, and authored assets in Git)
+UnityProject/Library/
+UnityProject/Temp/
+UnityProject/Obj/
+UnityProject/Logs/
+UnityProject/UserSettings/
+UnityProject/Build/
+UnityProject/Builds/
+UnityProject/.vs/
+
+# Common editor / operating-system noise
+.DS_Store
+Thumbs.db
+.vscode/
