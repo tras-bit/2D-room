@@ -12,7 +12,7 @@ namespace Subsistence
         public static bool MenuBackdropActive{get;private set;}=true;
         GUIStyle tiny,small,body,heading,title,mono,lightButton,darkButton,slotStyle;
         Texture2D lightTex,lightHover,darkTex,darkHover,slotTex,slotHover,selectedTex;
-        Font uiFont;
+        Font uiFont;int uiFontBaseSize;
         readonly Color ink=new Color(.94f,.93f,.86f),lime=new Color(.82f,.90f,.58f),muted=new Color(.72f,.72f,.64f),gold=new Color(.82f,.69f,.43f),copper=new Color(.77f,.36f,.18f);
         float uiScale,uiScaleSetting=.94f,brightnessSetting=.5f;ScreenMode returnMode=ScreenMode.MainMenu;bool fullscreen=true,craftTab,craftBuildingTab,showInteractionHints=true,showNotices=true;int settingsTab,qualityIndex,vSyncSetting=1,resolutionIndex;
         CharacterPreview preview;InventorySystem bag;ItemStack held;int selectedKind=-1,selectedIndex=-1;
@@ -62,20 +62,28 @@ namespace Subsistence
         {
             float viewportScale=Mathf.Min(Screen.width/1280f,Screen.height/720f);
             uiScale=Mathf.Clamp(Mathf.Clamp(viewportScale,.62f,1.22f)*uiScaleSetting,.55f,1.22f);
-            // Keep typography readable even on small windowed resolutions; layout and text scale separately.
-            float textScale=Mathf.Clamp(Mathf.Min(Screen.width/1280f,Screen.height/720f),1f,1.5f);
-            if(tiny!=null&&Mathf.Abs(tiny.fontSize-Mathf.RoundToInt(12*textScale))<1&&Mathf.Abs(heading.fontSize-Mathf.RoundToInt(24*uiScale))<1)return;
+            // Typography follows the same scale as its rectangles. Keeping text at 100% while
+            // shrinking the layout caused labels to wrap outside their rows and collide.
+            float textScale=uiScale;
+            int tinySize=Mathf.RoundToInt(12*textScale),smallSize=Mathf.RoundToInt(14*textScale),bodySize=Mathf.RoundToInt(16*textScale);
+            int headingSize=Mathf.RoundToInt(24*textScale),titleSize=Mathf.RoundToInt(44*textScale),buttonSize=Mathf.RoundToInt(13*textScale);
+            int baseFontSize=Mathf.RoundToInt(18*textScale),buttonPadding=Mathf.RoundToInt(14*uiScale);
+            if(tiny!=null&&tiny.fontSize==tinySize&&small.fontSize==smallSize&&body.fontSize==bodySize&&
+               heading.fontSize==headingSize&&title.fontSize==titleSize&&mono.fontSize==tinySize&&
+               lightButton.fontSize==buttonSize&&darkButton.fontSize==buttonSize&&
+               lightButton.padding.left==buttonPadding&&uiFontBaseSize==baseFontSize)return;
             lightTex=Tex(new Color(.75f,.83f,.52f));lightHover=Tex(new Color(.87f,.93f,.62f));darkTex=Tex(new Color(.105f,.13f,.105f));darkHover=Tex(new Color(.16f,.19f,.14f));slotTex=Tex(new Color(.11f,.135f,.112f));slotHover=Tex(new Color(.19f,.22f,.16f));selectedTex=Tex(new Color(.25f,.29f,.19f));
-            uiFont=Font.CreateDynamicFontFromOSFont("Arial",Mathf.RoundToInt(18*textScale));
+            uiFont=Font.CreateDynamicFontFromOSFont("Arial",baseFontSize);
+            uiFontBaseSize=baseFontSize;
             if(uiFont==null)uiFont=GUI.skin.font;
-            tiny=Style(12*textScale,false);small=Style(14*textScale,false);body=Style(16*textScale,false);heading=Style(24*uiScale,true);title=Style(44*uiScale,true);mono=Style(12*textScale,true);
+            tiny=Style(12*textScale,false,false);small=Style(14*textScale,false,true);body=Style(16*textScale,false,true);heading=Style(24*textScale,true,false);title=Style(44*textScale,true,false);mono=Style(12*textScale,true,false);
             tiny.font=small.font=body.font=heading.font=title.font=mono.font=uiFont;
             lightButton=MakeButton(lightTex,lightHover,new Color(.11f,.15f,.11f),Mathf.RoundToInt(13*textScale));darkButton=MakeButton(darkTex,darkHover,ink,Mathf.RoundToInt(13*textScale));
             slotStyle=new GUIStyle(GUI.skin.button){padding=new RectOffset(1,1,1,1),border=new RectOffset(1,1,1,1),fontSize=1};slotStyle.normal.background=slotTex;slotStyle.hover.background=slotHover;slotStyle.active.background=selectedTex;
         }
-        GUIStyle Style(float size,bool bold){return new GUIStyle(GUI.skin.label){fontSize=Mathf.RoundToInt(size),fontStyle=bold?FontStyle.Bold:FontStyle.Normal,richText=true,wordWrap=true,alignment=TextAnchor.UpperLeft,padding=new RectOffset(0,0,0,0),margin=new RectOffset(0,0,0,0),clipping=TextClipping.Clip};}
+        GUIStyle Style(float size,bool bold,bool wrap){return new GUIStyle(GUI.skin.label){fontSize=Mathf.RoundToInt(size),fontStyle=bold?FontStyle.Bold:FontStyle.Normal,richText=true,wordWrap=wrap,alignment=TextAnchor.UpperLeft,padding=new RectOffset(0,0,0,0),margin=new RectOffset(0,0,0,0),clipping=TextClipping.Clip};}
         GUIStyle MakeButton(Texture2D normal,Texture2D hover,Color text,int size)
-        {var s=new GUIStyle(GUI.skin.button){font=uiFont,fontSize=size,fontStyle=FontStyle.Bold,alignment=TextAnchor.MiddleLeft,padding=new RectOffset(Mathf.RoundToInt(14*uiScale),8,0,0)};s.normal.background=normal;s.hover.background=hover;s.active.background=hover;s.normal.textColor=text;s.hover.textColor=text;s.active.textColor=text;return s;}
+        {var s=new GUIStyle(GUI.skin.button){font=uiFont,fontSize=size,fontStyle=FontStyle.Bold,alignment=TextAnchor.MiddleLeft,wordWrap=false,clipping=TextClipping.Clip,padding=new RectOffset(Mathf.RoundToInt(14*uiScale),8,0,0)};s.normal.background=normal;s.hover.background=hover;s.active.background=hover;s.normal.textColor=text;s.hover.textColor=text;s.active.textColor=text;return s;}
         void OnGUI()
         {
             if(RunState.Instance==null)return;EnsureStyles();
@@ -356,7 +364,7 @@ namespace Subsistence
         {
             Panel(R(x,y,w,h),new Color(.075f,.089f,.074f));Label("ПЕРСОНАЖ",R(x+10*uiScale,y+7*uiScale,w-20*uiScale,20*uiScale),mono,lime);
             float portraitW=Mathf.Max(100*uiScale,w-128*uiScale),portraitH=Mathf.Min(330*uiScale,h*.52f),portraitX=x+(w-portraitW)/2,portraitY=y+35*uiScale;
-            if(preview!=null&&preview.Texture!=null)GUI.DrawTexture(R(portraitX,portraitY,portraitW,portraitH),preview.Texture,ScaleMode.ScaleToFit,true);
+            if(preview!=null&&preview.PreviewSprite!=null)DrawSpritePreview(R(portraitX,portraitY,portraitW,portraitH),preview.PreviewSprite);
             int[] gearSlots={(int)GearSlot.Head,(int)GearSlot.Chest,(int)GearSlot.Legs,(int)GearSlot.Feet,(int)GearSlot.Back};string[] labels={"ГОЛОВА","ТОРС","НОГИ","ОБУВЬ","СПИНА"};
             float slot=49*uiScale;float lx=x+8*uiScale,rx=x+w-slot-8*uiScale;
             float[] ys={portraitY+4*uiScale,portraitY+70*uiScale,portraitY+136*uiScale,portraitY+202*uiScale,portraitY+88*uiScale};float[] xs={lx,lx,lx,lx,rx};
@@ -364,7 +372,19 @@ namespace Subsistence
             float sy=portraitY+portraitH+8*uiScale;
             Label("ЗАЩИТА  /  ЭКИПИРОВКА",R(x+11*uiScale,sy,w-22*uiScale,15*uiScale),tiny,muted);
             ArmorLine(x+11*uiScale,sy+20*uiScale,w-22*uiScale,"ПУЛИ",bag.ArmorBullet);ArmorLine(x+11*uiScale,sy+39*uiScale,w-22*uiScale,"БЛИЖНИЙ БОЙ",bag.ArmorMelee);ArmorLine(x+11*uiScale,sy+58*uiScale,w-22*uiScale,"ХОЛОД",bag.ColdProtection);ArmorLine(x+11*uiScale,sy+77*uiScale,w-22*uiScale,"РАДИАЦИЯ",bag.RadiationProtection);
-            Label("ALPHA 1.4.0-rc1.1  ·  ОДИНОЧНАЯ СМЕНА",R(x+10*uiScale,y+h-19*uiScale,w-20*uiScale,13*uiScale),tiny,muted);
+            Label("ALPHA 1.4.0-rc1.2  ·  ОДИНОЧНАЯ СМЕНА",R(x+10*uiScale,y+h-19*uiScale,w-20*uiScale,13*uiScale),tiny,muted);
+        }
+        void DrawSpritePreview(Rect destination,Sprite sprite)
+        {
+            if(sprite==null||sprite.texture==null||destination.width<=0f||destination.height<=0f)return;
+            Rect crop=sprite.textureRect; // Sprite.Create atlas frame, not the entire shared character texture.
+            if(crop.width<=0f||crop.height<=0f)return;
+            float aspect=crop.width/crop.height,width=destination.width,height=destination.height;
+            if(width/height>aspect)width=height*aspect;else height=width/aspect;
+            Rect fitted=R(destination.center.x-width*.5f,destination.center.y-height*.5f,width,height);
+            Rect uv=new Rect(crop.x/sprite.texture.width,crop.y/sprite.texture.height,
+                crop.width/sprite.texture.width,crop.height/sprite.texture.height);
+            GUI.DrawTextureWithTexCoords(fitted,sprite.texture,uv,true);
         }
         void DrawGearSlot(int slotIndex,string label,Rect rect,int displayIndex)
         {
@@ -452,11 +472,12 @@ namespace Subsistence
         {
             float available=Mathf.Max(74*uiScale,h);Panel(R(x,y,w,available),new Color(.055f,.07f,.057f));
             ItemStack item=SelectedStack();
-            if(item.Empty&&held.Empty){Label("ВЫБЕРИ ПРЕДМЕТ",R(x+9*uiScale,y+7*uiScale,w-18*uiScale,17*uiScale),mono,muted);Label("Одежду можно экипировать. Пищу, воду и медицину — использовать.",R(x+9*uiScale,y+27*uiScale,w-18*uiScale,31*uiScale),tiny,muted);return;}
+            if(item.Empty&&held.Empty){Label("ВЫБЕРИ ПРЕДМЕТ",R(x+9*uiScale,y+7*uiScale,w-18*uiScale,17*uiScale),mono,muted);Label("Одежду можно экипировать. Пищу, воду и медицину — использовать.",R(x+9*uiScale,y+27*uiScale,w-18*uiScale,31*uiScale),small,muted);return;}
             bool fromCursor=!held.Empty;ItemStack shown=fromCursor?held:item;ItemDefinition def=ItemCatalog.Get(shown.id);
             Label(def.name.ToUpperInvariant()+(shown.count>1?"  ×"+shown.count:""),R(x+9*uiScale,y+6*uiScale,w-18*uiScale,19*uiScale),mono,ink);
-            Label(def.description,R(x+9*uiScale,y+26*uiScale,w-18*uiScale,34*uiScale),tiny,muted);
             float by=y+available-34*uiScale,bw=(w-24*uiScale)/3;
+            float descriptionY=y+26*uiScale,descriptionH=Mathf.Max(16*uiScale,by-descriptionY-4*uiScale);
+            Label(def.description,R(x+9*uiScale,descriptionY,w-18*uiScale,descriptionH),small,muted);
             if(Usable(shown.id)&&Button(IsPlan(shown.id)?"ИЗУЧИТЬ":"ИСПОЛЬЗОВАТЬ",R(x+8*uiScale,by,bw,27*uiScale),darkButton))UseShown(fromCursor);
             if(def.gearSlot.HasValue&&Button("НАДЕТЬ",R(x+12*uiScale+bw,by,bw,27*uiScale),darkButton))EquipShown(fromCursor);
             if(Button("ВЫБРОСИТЬ",R(x+16*uiScale+bw*2,by,bw,27*uiScale),darkButton))DropShown(fromCursor);
@@ -718,7 +739,10 @@ namespace Subsistence
         bool Button(string text,Rect rect,GUIStyle style)=>GUI.Button(rect,text,style);
         void Label(string text,Rect rect,GUIStyle style,Color color)
         {
-            rect.height=Mathf.Max(rect.height,style.fontSize+2f);
+            if(style==null||rect.width<=0f||rect.height<=0f)return;
+            // Keep the small IMGUI baseline allowance proportional too; a fixed two-pixel
+            // minimum used to become disproportionately large as the surrounding UI shrank.
+            rect.height=Mathf.Max(rect.height,style.fontSize+2f*uiScale);
             Color old=GUI.color;GUI.color=color;GUI.Label(rect,text,style);GUI.color=old;
         }
         static void DrawRect(Rect rect,Color color){Color old=GUI.color;GUI.color=color;GUI.DrawTexture(rect,Texture2D.whiteTexture);GUI.color=old;}

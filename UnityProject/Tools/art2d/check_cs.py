@@ -156,6 +156,23 @@ def main() -> int:
     if "BuildingSystem2D.ClearPlayerPlacedObjects();" not in hud:
         fail("GameHUD.StartRun must clear player-placed building objects")
 
+    # UI regression guards: keep type sizes tied to layout and draw only the selected
+    # Sprite frame in the character preview, not its entire shared atlas texture.
+    preview_path = SCRIPTS / "CharacterPreview.cs"
+    preview = preview_path.read_text(encoding="utf-8") if preview_path.exists() else ""
+    if not re.search(r"public\s+Sprite\s+PreviewSprite", preview):
+        fail("CharacterPreview must retain the selected Sprite, not its atlas Texture")
+    if not re.search(r"PreviewSprite\s*=\s*PixelArtFactory\.Survivor\(0,\s*equipment\)", preview):
+        fail("CharacterPreview must refresh from the selected survivor Sprite")
+    if not re.search(r"float\s+textScale\s*=\s*uiScale\s*;", hud):
+        fail("GameHUD typography must use the layout UI scale")
+    sprite_preview = extract_body(hud, "void DrawSpritePreview")
+    if "sprite.textureRect" not in sprite_preview or "GUI.DrawTextureWithTexCoords" not in sprite_preview:
+        fail("character preview must crop and draw the Sprite's atlas frame")
+    label_body = extract_body(hud, "void Label(string text")
+    if "style.fontSize+2f*uiScale" not in label_body:
+        fail("IMGUI label baseline allowance must scale with the UI")
+
     world_builder_path = SCRIPTS / "WorldBuilder2D.cs"
     world_builder = world_builder_path.read_text(encoding="utf-8") if world_builder_path.exists() else ""
     if not re.search(r"\b\w+\.gameObject\.AddComponent<AmbientDust2D>\(\)", world_builder):
