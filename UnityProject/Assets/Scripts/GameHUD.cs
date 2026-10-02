@@ -14,7 +14,7 @@ namespace Subsistence
         Texture2D lightTex,lightHover,darkTex,darkHover,slotTex,slotHover,selectedTex;
         Font uiFont;
         readonly Color ink=new Color(.94f,.93f,.86f),lime=new Color(.82f,.90f,.58f),muted=new Color(.72f,.72f,.64f),gold=new Color(.82f,.69f,.43f),copper=new Color(.77f,.36f,.18f);
-        float uiScale,uiScaleSetting=.94f,brightnessSetting=.5f;ScreenMode returnMode=ScreenMode.MainMenu;bool fullscreen=true,craftTab,showInteractionHints=true,showNotices=true;int settingsTab,qualityIndex,vSyncSetting=1,resolutionIndex;
+        float uiScale,uiScaleSetting=.94f,brightnessSetting=.5f;ScreenMode returnMode=ScreenMode.MainMenu;bool fullscreen=true,craftTab,craftBuildingTab,showInteractionHints=true,showNotices=true;int settingsTab,qualityIndex,vSyncSetting=1,resolutionIndex;
         CharacterPreview preview;InventorySystem bag;ItemStack held;int selectedKind=-1,selectedIndex=-1;
         Texture2D menuBackdrop,settingsBackdrop;
         Resolution[] resolutions;
@@ -244,7 +244,7 @@ namespace Subsistence
             float clock=18*60+42+Mathf.FloorToInt(s.ShiftSeconds*1.08f);string time=$"{(clock/60)%24:00}:{clock%60:00}";
             Label("●  "+time+"   /   SHIFT 01",R(Screen.width-margin-rw+9*uiScale,margin+6*uiScale,rw-18*uiScale,15*uiScale),mono,ink);
             Label("LOCAL FIELD TEST",R(Screen.width-margin-rw+9*uiScale,margin+24*uiScale,rw-18*uiScale,12*uiScale),tiny,muted);
-            DrawHotbar();DrawRustVitals(s);DrawInteractHint(p);
+            DrawHotbar();DrawRustVitals(s);DrawInteractHint(p);DrawBuildingHint(p);
             string lightState=p!=null&&p.FlashlightOn?"F  LIGHT ON":"F  LIGHT OFF";
             Label("A/D MOVE  ·  SPACE JUMP  ·  E USE  ·  "+lightState+"  ·  Q ATTACK  ·  H MED",R(margin,Screen.height-25*uiScale,510*uiScale,14*uiScale),tiny,muted);
             if(showNotices&&s.NoticeTime>0){float nw=Mathf.Min(480*uiScale,Screen.width*.72f);Panel(R((Screen.width-nw)/2,Screen.height-190*uiScale,nw,27*uiScale),new Color(.045f,.06f,.046f,.95f));Label(s.Notice,R((Screen.width-nw)/2+10*uiScale,Screen.height-184*uiScale,nw-20*uiScale,16*uiScale),small,ink);}
@@ -304,6 +304,14 @@ namespace Subsistence
             if(!showInteractionHints||player==null)return;string hint=NearestHint(player);if(string.IsNullOrEmpty(hint))return;
             float ww=Mathf.Min(350*uiScale,Screen.width*.72f);Panel(R((Screen.width-ww)/2,Screen.height-147*uiScale,ww,27*uiScale),new Color(.06f,.08f,.06f,.94f));Label(hint,R((Screen.width-ww)/2+10*uiScale,Screen.height-141*uiScale,ww-20*uiScale,16*uiScale),mono,lime);
         }
+        void DrawBuildingHint(PlayerController player)
+        {
+            if(player==null)return;var building=player.GetComponent<BuildingSystem2D>();
+            if(building==null||string.IsNullOrEmpty(building.HudHint))return;
+            float ww=Mathf.Min(720*uiScale,Screen.width*.92f),x=(Screen.width-ww)/2,y=Screen.height-104*uiScale;
+            Panel(R(x,y,ww,23*uiScale),new Color(.035f,.052f,.038f,.94f));
+            Label(building.HudHint,R(x+8*uiScale,y+4*uiScale,ww-16*uiScale,15*uiScale),tiny,lime);
+        }
         string NearestHint(PlayerController player)
         {
             float best=2.3f;string hint="";
@@ -356,7 +364,7 @@ namespace Subsistence
             float sy=portraitY+portraitH+8*uiScale;
             Label("ЗАЩИТА  /  ЭКИПИРОВКА",R(x+11*uiScale,sy,w-22*uiScale,15*uiScale),tiny,muted);
             ArmorLine(x+11*uiScale,sy+20*uiScale,w-22*uiScale,"ПУЛИ",bag.ArmorBullet);ArmorLine(x+11*uiScale,sy+39*uiScale,w-22*uiScale,"БЛИЖНИЙ БОЙ",bag.ArmorMelee);ArmorLine(x+11*uiScale,sy+58*uiScale,w-22*uiScale,"ХОЛОД",bag.ColdProtection);ArmorLine(x+11*uiScale,sy+77*uiScale,w-22*uiScale,"РАДИАЦИЯ",bag.RadiationProtection);
-            Label("VER. 0.2  ·  ОДИНОЧНАЯ СМЕНА",R(x+10*uiScale,y+h-19*uiScale,w-20*uiScale,13*uiScale),tiny,muted);
+            Label("ALPHA 1.4.0-rc1  ·  ОДИНОЧНАЯ СМЕНА",R(x+10*uiScale,y+h-19*uiScale,w-20*uiScale,13*uiScale),tiny,muted);
         }
         void DrawGearSlot(int slotIndex,string label,Rect rect,int displayIndex)
         {
@@ -389,12 +397,17 @@ namespace Subsistence
         }
         void DrawContainerContents(float x,float y,float w,float h)
         {
-            var crate=bag.OpenContainer;Label("КОРОБКА  /  TIER "+crate.Tier,R(x+12*uiScale,y+47*uiScale,w-24*uiScale,20*uiScale),mono,lime);
+            var crate=bag.OpenContainer;
+            string header=crate.IsPlayerStorage?"ДОМАШНЕЕ ХРАНИЛИЩЕ":crate.IsToolCupboard?"ШКАФ СТРОИТЕЛЬНЫХ ПРАВ":"ЛУТ-КЕЙС  /  TIER "+crate.Tier;
+            Label(header,R(x+12*uiScale,y+47*uiScale,w-24*uiScale,20*uiScale),mono,lime);
             Label(crate.DisplayName.ToUpperInvariant(),R(x+12*uiScale,y+69*uiScale,w-24*uiScale,18*uiScale),tiny,muted);
-            int columns=4;float gap=5*uiScale,cell=Mathf.Min(66*uiScale,(w-28*uiScale-3*gap)/columns),gridW=columns*cell+3*gap,start=x+(w-gridW)/2,top=y+99*uiScale;
+            ToolCupboard2D cupboard=crate.IsToolCupboard?crate.GetComponent<ToolCupboard2D>():null;
+            if(cupboard!=null)Label(cupboard.Status,R(x+12*uiScale,y+87*uiScale,w-24*uiScale,15*uiScale),tiny,gold);
+            int columns=4;float gap=5*uiScale,cell=Mathf.Min(66*uiScale,(w-28*uiScale-3*gap)/columns),gridW=columns*cell+3*gap,start=x+(w-gridW)/2,top=y+(crate.IsToolCupboard?112:99)*uiScale;
             for(int i=0;i<crate.Items.Length;i++)DrawItemSlot(crate.Items,i,R(start+(i%columns)*(cell+gap),top+(i/columns)*(cell+gap),cell,cell),2);
             float remaining=top+3*(cell+gap)+13*uiScale;
-            Label(crate.Empty?"КОНТЕЙНЕР ПУСТ":"SHIFT + КЛИК — ПЕРЕНЕСТИ",R(x+12*uiScale,remaining,w-24*uiScale,18*uiScale),tiny,crate.Empty?muted:gold);
+            string transferHint=crate.IsToolCupboard?(crate.Empty?"ПУСТО · ДОБАВЬ РЕСУРС ГРЕЙДА":"SHIFT + КЛИК — ПОПОЛНИТЬ UPKEEP"):crate.Empty?"КОНТЕЙНЕР ПУСТ":"SHIFT + КЛИК — ПЕРЕНЕСТИ";
+            Label(transferHint,R(x+12*uiScale,remaining,w-24*uiScale,18*uiScale),tiny,crate.Empty?muted:gold);
             if(Button("ЗАБРАТЬ ВСЁ",R(x+12*uiScale,h+y-56*uiScale,w-24*uiScale,34*uiScale),darkButton))for(int i=0;i<crate.Items.Length;i++)bag.QuickMoveContainer(i);
         }
         void DrawCraftPanel(float x,float y,float w,float h)
@@ -403,16 +416,36 @@ namespace Subsistence
             string bench=bag.WorkbenchTier>0?"ВЕРСТАК УРОВНЯ "+bag.WorkbenchTier:"НЕТ ДОСТУПА К ВЕРСТАКУ";Label(bench,R(x+12*uiScale,y+71*uiScale,w-24*uiScale,18*uiScale),tiny,bag.WorkbenchTier>0?gold:muted);
             string plans="ПЛАНЫ  ·  БАЗА "+(bag.HasBlueprint(ItemId.WorkbenchI)?"✓":"—")+"   АПТЕЧКА "+(bag.HasBlueprint(ItemId.Blueprint)?"✓":"—")+"   II "+(bag.HasBlueprint(ItemId.WorkbenchII)?"✓":"—");
             Label(plans,R(x+12*uiScale,y+89*uiScale,w-24*uiScale,15*uiScale),tiny,muted);
-            float by=y+111*uiScale,bh=57*uiScale,step=bh+7*uiScale;
-            CraftButton(x,by,w,bh,"БИНТ","2 ткани  ·  без чертежа и верстака",0);
-            CraftButton(x,by+step,w,bh,"СТАЛЬНАЯ ТРУБА","12 металла + 2 ткани  ·  чертёж I + верстак I",1);
-            CraftButton(x,by+step*2,w,bh,"ПАТРОНЫ 9 ММ ×8","5 фрагментов металла  ·  чертёж I + верстак I",2);
-            CraftButton(x,by+step*3,w,bh,"АПТЕЧКА","8 ткани + 2 платы  ·  два чертежа + верстак II",3);
+            float tabY=y+108*uiScale,tabGap=6*uiScale,tabW=(w-26*uiScale-tabGap)/2;
+            if(Button("ПОЛЕВОЕ",R(x+10*uiScale,tabY,tabW,28*uiScale),!craftBuildingTab?lightButton:darkButton))craftBuildingTab=false;
+            if(Button("СТРОИТЕЛЬСТВО",R(x+16*uiScale+tabW,tabY,tabW,28*uiScale),craftBuildingTab?lightButton:darkButton))craftBuildingTab=true;
+            float by=y+145*uiScale,bh=52*uiScale,step=57*uiScale;
+            if(!craftBuildingTab)
+            {
+                CraftButton(x,by,w,bh,"БИНТ","2 ткани  ·  без чертежа и верстака",0);
+                CraftButton(x,by+step,w,bh,"СТАЛЬНАЯ ТРУБА","12 металла + 2 ткани  ·  чертёж I + верстак I",1);
+                CraftButton(x,by+step*2,w,bh,"ПАТРОНЫ 9 ММ ×8","5 фрагментов металла  ·  чертёж I + верстак I",2);
+                CraftButton(x,by+step*3,w,bh,"АПТЕЧКА","8 ткани + 2 платы  ·  два чертежа + верстак II",3);
+            }
+            else
+            {
+                CraftButton(x,by,w,bh,"ЧЕРТЁЖ СТРОИТЕЛЬСТВА","20 досок  ·  затем выбери на поясе",4);
+                CraftButton(x,by+step,w,bh,"СТРОИТЕЛЬНЫЙ МОЛОТОК","100 досок  ·  ремонт, улучшение и разборка",5);
+                CraftButton(x,by+step*2,w,bh,"ДОМАШНИЙ ЯЩИК","40 досок  ·  личное хранилище",6);
+                CraftButton(x,by+step*3,w,bh,"ВЕРСТАК I","80 досок + 5 металла  ·  размести рядом",7);
+                CraftButton(x,by+step*4,w,bh,"ВЕРСТАК II","200 досок + 25 металла  ·  нужен чертёж и верстак I",8);
+                CraftButton(x,by+step*5,w,bh,"ШКАФ СТРОИТЕЛЬНЫХ ПРАВ","100 досок + 10 металла  ·  upkeep и привилегия",9);
+            }
         }
         void CraftButton(float x,float y,float w,float h,string name,string req,int type)
         {
             Rect r=R(x+10*uiScale,y,w-20*uiScale,h);Panel(r,new Color(.105f,.13f,.105f));Outline(r,new Color(.22f,.27f,.20f));
-            if(GUI.Button(r,GUIContent.none,slotStyle)){if(type==0)bag.CraftBandage();else if(type==1)bag.CraftPipe();else if(type==2)bag.CraftAmmo();else bag.CraftMedkit();}
+            if(GUI.Button(r,GUIContent.none,slotStyle))
+            {
+                if(type==0)bag.CraftBandage();else if(type==1)bag.CraftPipe();else if(type==2)bag.CraftAmmo();else if(type==3)bag.CraftMedkit();
+                else if(type==4)bag.CraftBuildingPlan();else if(type==5)bag.CraftHammer();else if(type==6)bag.CraftStorageBox();
+                else if(type==7)bag.CraftWorkbenchStationI();else if(type==8)bag.CraftWorkbenchStationII();else bag.CraftToolCupboard();
+            }
             Label(name,R(r.x+9*uiScale,r.y+7*uiScale,r.width-18*uiScale,19*uiScale),mono,ink);Label(req,R(r.x+9*uiScale,r.y+30*uiScale,r.width-18*uiScale,15*uiScale),tiny,muted);
         }
         void DrawItemDetails(float x,float y,float w,float h)
@@ -586,8 +619,8 @@ namespace Subsistence
         void DrawControlRows(Rect r)
         {
             Label("УПРАВЛЕНИЕ",R(r.x+24*uiScale,r.y+17*uiScale,r.width-48*uiScale,25*uiScale),heading,ink);
-            string[] keys={"W / A / S / D   ИЛИ   ← →","SPACE / W / ↑","E","Q","F","1 — 6","TAB / I","SHIFT + ЛКМ","ПКМ","ESC"};
-            string[] actions={"Движение по коридору","Прыжок","Открыть коробку · подобрать · торговец · лифт","Атака / отбить сталкера","Фонарь","Выбрать слот пояса","Инвентарь и экипировка","Быстрый перенос стопки","Разделить стопку / положить одну","Пауза или закрыть окно"};
+            string[] keys={"W / A / S / D   ИЛИ   ← →","SPACE / W / ↑","E","Q","F","1 — 6","TAB / I","SHIFT + ЛКМ","ПКМ","ЛКМ / R / T","ЛКМ / ПКМ","ESC"};
+            string[] actions={"Движение по коридору","Прыжок","Открыть коробку · подобрать · торговец · лифт","Атака / отбить сталкера","Фонарь","Выбрать слот пояса","Инвентарь и экипировка","Быстрый перенос стопки","Разделить стопку / положить одну","Чертёж: строить / сменить секцию / этаж","Молоток: улучшить / разобрать секцию","Пауза или закрыть окно"};
             float top=r.y+61*uiScale,row=29*uiScale;
             for(int i=0;i<keys.Length;i++){float yy=top+i*row;Label(keys[i],R(r.x+26*uiScale,yy,r.width*.37f,20*uiScale),mono,gold);Label(actions[i],R(r.x+r.width*.40f,yy,r.width*.56f,20*uiScale),small,ink);}
         }
@@ -664,6 +697,7 @@ namespace Subsistence
         }
         void StartRun()
         {
+            BuildingSystem2D.ClearPlayerPlacedObjects();
             RunState.Instance.ResetForNewRun();var player=FindObjectOfType<PlayerController>();if(player!=null)player.ResetForNewRun(-19f);
             foreach(var watcher in FindObjectsOfType<WatcherAI>())watcher.ResetForNewRun();foreach(var crate in FindObjectsOfType<LootContainer>())crate.ResetForNewRun();foreach(var elevator in FindObjectsOfType<LevelElevator>())elevator.ResetForNewRun();
             bag=player!=null?player.Inventory:null;if(preview!=null&&bag!=null)preview.SetGear(bag.Gear);held.Clear();selectedKind=-1;SetMode(ScreenMode.Playing);AudioDirector.Instance?.Play("ui",.7f);

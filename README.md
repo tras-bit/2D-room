@@ -24,7 +24,7 @@ Open `UnityProject/` in Unity Hub using Editor **2022.3.62f2**. The game uses UR
 - Art source naming and rebuild instructions: [`UnityProject/ART_PIPELINE.md`](UnityProject/ART_PIPELINE.md).
 - Side-view mockups for both levels are in [`docs/preview/`](docs/preview/).
 
-The seven environment materials now use source pixel art. Three of 14 props are in the atlas (crate tier 1, workbench tier 1 and the door); the workbench art is available for a future player-placed station, not spawned by the level. The opening world has no player home, workbench or home storage; its fixed crates are abandoned scavenging caches only. The other 11 prop sprites and all inventory icons still use their fallbacks.
+The opening world has no prebuilt player home, workbench, building plan, hammer or home storage. A Rust-inspired 2D loop is implemented: craft a plan and hammer from scavenged wood, place supported grid-snapped foundations/walls/doorways/floors, upgrade, repair or dismantle them, and craft/place workbenches, an empty home box and a Tool Cupboard. The cupboard grants a 12 m upkeep radius, consumes matching materials per building section, and unmaintained pieces decay and can collapse. Abandoned world caches remain separate. The seven environment materials use source pixel art; additional structural pieces and item icons use runtime pixel-art fallbacks where atlas art is not present.
 
 ## Rebuild art and run static checks
 

@@ -143,6 +143,18 @@ def main() -> int:
             fail("GameBootstrap must not spawn a pre-placed workbench")
         if "CreateHomeStorage(" in bootstrap or "AddComponent<HomeStorage" in bootstrap:
             fail("GameBootstrap must not spawn player home storage")
+        if "AddComponent<ToolCupboard2D>" in bootstrap or "InitializeToolCupboard(" in bootstrap:
+            fail("GameBootstrap must not spawn a pre-placed Tool Cupboard")
+
+    building_path = SCRIPTS / "BuildingSystem2D.cs"
+    building = building_path.read_text(encoding="utf-8") if building_path.exists() else ""
+    clear_body = extract_body(building, "public static void ClearPlayerPlacedObjects")
+    if not clear_body or "IsPlayerStorage" not in clear_body or "IsToolCupboard" not in clear_body:
+        fail("new runs must clear both player storage and the Tool Cupboard")
+    hud_path = SCRIPTS / "GameHUD.cs"
+    hud = hud_path.read_text(encoding="utf-8") if hud_path.exists() else ""
+    if "BuildingSystem2D.ClearPlayerPlacedObjects();" not in hud:
+        fail("GameHUD.StartRun must clear player-placed building objects")
 
     icon_body = extract_body(factory, "public static string IconName")
     icon_names = set(re.findall(r'return\s+"([a-z0-9_]+)"\s*;', icon_body))
@@ -163,7 +175,7 @@ def main() -> int:
         if "Procedural(ItemId id)" not in fallback:
             fail("painted icons are incomplete and no ItemIconFactory.Procedural fallback exists")
         else:
-            print(f"  note: {len(missing_icons)} painted icons not added yet; procedural HUD fallback is active")
+            print(f"  note: {len(missing_icons)} standalone icon PNGs absent; procedural pixel-art fallback is active")
 
     print(f"item ids: {len(item_ids)}, atlas sprites: {len(known)}, tiles: {len(tile_names)}, icons: {len(actual_icons)}")
     print("FAILURES:", FAIL)

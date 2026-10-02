@@ -20,6 +20,7 @@ namespace Subsistence
 
         Rigidbody2D body;
         InventorySystem inventory;
+        BuildingSystem2D buildingSystem;
         CharacterVisual2D character;
         SpriteRenderer beamRenderer,handFlashlightRenderer;
         bool grounded,flashlightOn=true,insideElevator;
@@ -46,6 +47,8 @@ namespace Subsistence
             character=GetComponent<CharacterVisual2D>();if(character==null)character=gameObject.AddComponent<CharacterVisual2D>();
             inventory=GetComponent<InventorySystem>();if(inventory==null)inventory=gameObject.AddComponent<InventorySystem>();
             inventory.Character=character;
+            buildingSystem=GetComponent<BuildingSystem2D>();if(buildingSystem==null)buildingSystem=gameObject.AddComponent<BuildingSystem2D>();
+            buildingSystem.Initialize(this,inventory);
 
             flashlightPivot=new GameObject("Flashlight rig").transform;
             flashlightPivot.SetParent(transform,false);
@@ -100,7 +103,11 @@ namespace Subsistence
             if(Input.GetKeyDown(KeyCode.F))ToggleFlashlight();
             for(int i=0;i<6;i++)if(Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1+i)))inventory.SelectBelt(i);
             float wheel=Input.mouseScrollDelta.y;
-            if(Mathf.Abs(wheel)>.01f)inventory.SelectBelt((inventory.SelectedBeltSlot+(wheel>0?5:1))%InventorySystem.BeltSize);
+            if(Mathf.Abs(wheel)>.01f)
+            {
+                if(buildingSystem!=null&&buildingSystem.IsBuildPlanSelected)buildingSystem.CyclePart(wheel>0?-1:1);
+                else inventory.SelectBelt((inventory.SelectedBeltSlot+(wheel>0?5:1))%InventorySystem.BeltSize);
+            }
             if(invulnerable>0)invulnerable-=Time.deltaTime;
             if(attackCooldown>0)attackCooldown-=Time.deltaTime;
             if(coyoteClock>0)coyoteClock-=Time.deltaTime;

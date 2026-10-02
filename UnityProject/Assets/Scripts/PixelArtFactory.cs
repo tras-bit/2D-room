@@ -102,6 +102,14 @@ namespace Subsistence
                 case ItemId.RifleAmmo: return "rifle_ammo";
                 case ItemId.HazmatSuit: return "hazmat";
                 case ItemId.CircuitBoard: return "circuit_board";
+                case ItemId.BuildingPlan: return "building_plan";
+                case ItemId.Hammer: return "hammer";
+                case ItemId.Stone: return "stone";
+                case ItemId.HighQualityMetal: return "high_quality_metal";
+                case ItemId.StorageBox: return "storage_box";
+                case ItemId.WorkbenchStationI: return "workbench_station_1";
+                case ItemId.WorkbenchStationII: return "workbench_station_2";
+                case ItemId.ToolCupboard: return "tool_cupboard";
                 default: return "scrap";
             }
         }

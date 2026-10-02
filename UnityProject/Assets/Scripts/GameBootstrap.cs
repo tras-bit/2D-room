@@ -51,6 +51,7 @@ namespace Subsistence
             MakeSupplyCache(-9f,1,"LEVEL 0 · ЗАБРОШЕННЫЙ ЯЩИК С ПРИПАСАМИ");
             MakeSupplyCache(18f,1,"LEVEL 0 · ПОТЕРЯННАЯ ПОСЫЛКА");
             MakeSupplyCache(62f,2,"LEVEL 0 · ЗАПЕЧАТАННЫЙ ЛУТ-КЕЙС");
+            MakeSupplyCache(143f,3,"LEVEL 1 · КОМНАТА С ТЕХНИЧЕСКИМИ ЗАПАСАМИ");
         }
         void MakeSupplyCache(float x,int tier,string name)
         {

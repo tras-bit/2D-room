@@ -235,6 +235,50 @@ namespace Subsistence
                     DrawRect(20,22,2,15,C(204,164,78));DrawRect(43,22,2,15,C(204,164,78));DrawRect(21,27,6,2,C(204,164,78));DrawRect(37,32,7,2,C(204,164,78));
                     DrawRect(19,45,2,3,C(210,180,103));DrawRect(25,45,2,3,C(210,180,103));DrawRect(31,45,2,3,C(210,180,103));DrawRect(37,45,2,3,C(210,180,103));DrawRect(43,45,2,3,C(210,180,103));
                     break;
+                case ItemId.BuildingPlan:
+                    DrawRect(13,12,39,42,C(13,22,20));DrawRect(11,10,38,42,C(57,101,95));DrawRect(16,15,28,31,C(38,73,70));
+                    DrawRect(19,20,2,21,C(156,186,151));DrawRect(19,20,22,2,C(156,186,151));DrawRect(39,20,2,15,C(156,186,151));
+                    DrawRect(19,39,16,2,C(156,186,151));DrawRect(33,33,8,2,C(211,187,121));DrawRect(33,33,2,8,C(211,187,121));
+                    DrawRect(25,28,12,2,C(211,187,121));DrawRect(25,28,2,8,C(211,187,121));DrawRect(25,34,9,2,C(211,187,121));
+                    break;
+                case ItemId.Hammer:
+                    DrawPoly(new[]{new Vector2Int(11,17),new Vector2Int(17,11),new Vector2Int(31,23),new Vector2Int(27,28)},C(23,28,25));
+                    DrawRect(13,14,19,8,C(143,151,134));DrawRect(15,12,16,5,C(204,193,155));DrawRect(19,19,10,3,C(82,91,82));
+                    DrawPoly(new[]{new Vector2Int(27,25),new Vector2Int(32,29),new Vector2Int(46,44),new Vector2Int(41,49)},C(49,38,28));
+                    DrawPoly(new[]{new Vector2Int(30,26),new Vector2Int(35,29),new Vector2Int(45,43),new Vector2Int(42,46)},C(167,112,60));
+                    DrawRect(37,37,7,3,C(204,145,76));DrawRect(42,43,4,4,C(35,30,24));
+                    break;
+                case ItemId.Stone:
+                    DrawPoly(new[]{new Vector2Int(10,42),new Vector2Int(13,28),new Vector2Int(23,18),new Vector2Int(34,22),new Vector2Int(42,15),new Vector2Int(53,28),new Vector2Int(49,44),new Vector2Int(35,50),new Vector2Int(19,48)},C(21,26,25));
+                    DrawPoly(new[]{new Vector2Int(13,40),new Vector2Int(16,29),new Vector2Int(24,21),new Vector2Int(34,25),new Vector2Int(42,18),new Vector2Int(50,29),new Vector2Int(46,41),new Vector2Int(34,46),new Vector2Int(20,44)},C(111,116,106));
+                    DrawRect(19,28,10,3,C(177,179,164));DrawRect(31,25,7,3,C(143,149,138));DrawRect(24,37,13,2,C(79,87,81));DrawRect(42,31,4,8,C(83,91,84));
+                    break;
+                case ItemId.HighQualityMetal:
+                    DrawRect(12,19,40,29,C(14,20,20));DrawRect(15,16,34,29,C(81,119,119));DrawRect(19,19,26,22,C(111,157,155));
+                    DrawRect(22,22,20,4,C(188,211,188));DrawRect(20,31,24,3,C(49,73,72));DrawRect(24,38,16,2,C(64,94,93));
+                    DrawRect(17,17,3,25,C(45,68,68));DrawRect(44,17,3,25,C(49,71,71));
+                    DrawRect(18,20,2,2,C(224,205,139));DrawRect(44,20,2,2,C(224,205,139));DrawRect(18,38,2,2,C(224,205,139));DrawRect(44,38,2,2,C(224,205,139));
+                    break;
+                case ItemId.StorageBox:
+                    DrawRect(11,20,43,29,C(15,20,18));DrawRect(14,16,37,29,C(105,67,39));DrawRect(17,19,31,23,C(139,91,50));
+                    DrawRect(18,20,29,3,C(197,144,77));DrawRect(20,25,5,13,C(99,62,38));DrawRect(29,25,4,13,C(99,62,38));DrawRect(38,25,5,13,C(99,62,38));
+                    DrawRect(18,39,29,2,C(72,49,34));DrawRect(23,15,19,3,C(165,116,67));DrawRect(28,28,8,7,C(53,65,55));DrawRect(30,30,4,3,C(185,160,101));
+                    break;
+                case ItemId.WorkbenchStationI:
+                case ItemId.WorkbenchStationII:
+                    DrawRect(10,42,44,7,C(18,23,20));DrawRect(13,36,38,7,C(127,87,49));DrawRect(16,33,32,4,id==ItemId.WorkbenchStationI?C(191,145,78):C(135,167,148));
+                    DrawRect(18,40,5,12,C(85,60,39));DrawRect(43,40,5,12,C(85,60,39));
+                    DrawRect(19,21,21,12,id==ItemId.WorkbenchStationI?C(76,105,78):C(41,74,66));
+                    DrawRect(23,24,13,6,id==ItemId.WorkbenchStationI?C(174,174,132):C(92,155,127));
+                    DrawRect(42,19,5,14,id==ItemId.WorkbenchStationI?C(192,145,77):C(188,194,155));DrawRect(20,30,26,2,C(43,36,27));
+                    break;
+                case ItemId.ToolCupboard:
+                    DrawRect(12,12,42,43,C(13,19,19));DrawRect(15,10,36,42,C(54,69,62));DrawRect(19,14,28,34,C(76,92,81));
+                    DrawRect(22,18,22,2,C(172,171,133));DrawRect(22,22,22,3,C(31,45,40));DrawRect(22,27,22,15,C(43,58,51));
+                    DrawRect(25,30,16,2,C(165,172,137));DrawRect(25,35,16,2,C(165,172,137));DrawRect(25,40,11,2,C(165,172,137));
+                    DrawRect(18,46,30,3,C(30,39,35));DrawRect(17,14,2,30,C(138,99,58));DrawRect(43,14,2,30,C(138,99,58));
+                    DrawRect(44,28,3,4,C(203,168,90));
+                    break;
                 default:
                     DrawRect(18,17,28,30,dark);DrawRect(20,15,24,30,main);DrawRect(23,19,18,4,light);DrawRect(23,27,18,3,shade);DrawRect(23,36,13,3,shade);
                     break;
@@ -274,6 +318,14 @@ namespace Subsistence
                 case ItemId.Keycard:return "КАРТ";
                 case ItemId.HazmatSuit:return "ХАЗ";
                 case ItemId.CircuitBoard:return "ПЛАТ";
+                case ItemId.BuildingPlan:return "ПЛАН";
+                case ItemId.Hammer:return "МОЛОТ";
+                case ItemId.Stone:return "КАМ";
+                case ItemId.HighQualityMetal:return "HQM";
+                case ItemId.StorageBox:return "ЯЩИК";
+                case ItemId.WorkbenchStationI:return "ВЕР1";
+                case ItemId.WorkbenchStationII:return "ВЕР2";
+                case ItemId.ToolCupboard:return "TC";
                 default:return "ITEM";
             }
         }

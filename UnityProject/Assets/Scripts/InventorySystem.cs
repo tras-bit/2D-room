@@ -8,7 +8,9 @@ namespace Subsistence
         None, Flashlight, Cloth, Scrap, MetalFragments, Wood, Water, CannedFood,
         Bandage, Pistol, PistolAmmo, Pipe, Blueprint, WorkbenchI, WorkbenchII,
         FieldJacket, FieldPants, WorkBoots, Backpack, Helmet, ArmorVest,
-        Medkit, Keycard, Rifle, RifleAmmo, HazmatSuit, CircuitBoard
+        Medkit, Keycard, Rifle, RifleAmmo, HazmatSuit, CircuitBoard,
+        BuildingPlan, Hammer, Stone, HighQualityMetal, StorageBox,
+        WorkbenchStationI, WorkbenchStationII, ToolCupboard
     }
 
     public enum GearSlot { Head, Chest, Legs, Feet, Back }
@@ -62,7 +64,15 @@ namespace Subsistence
             new ItemDefinition(ItemId.Rifle,"Карабин","WEAPON","Старый карабин. Редкая находка.",1,3,new Color(.49f,.48f,.39f)),
             new ItemDefinition(ItemId.RifleAmmo,"Патроны 5.56","AMMO","Боеприпас для карабина.",40,3,new Color(.74f,.61f,.32f)),
             new ItemDefinition(ItemId.HazmatSuit,"Защитный костюм","Броня","Защита от холода и радиоактивной пыли.",1,3,new Color(.71f,.68f,.27f),GearSlot.Chest,18,20,38,55),
-            new ItemDefinition(ItemId.CircuitBoard,"Плата управления","TECH","Сложная электроника из закрытой зоны.",20,2,new Color(.35f,.66f,.48f))
+            new ItemDefinition(ItemId.CircuitBoard,"Плата управления","TECH","Сложная электроника из закрытой зоны.",20,2,new Color(.35f,.66f,.48f)),
+            new ItemDefinition(ItemId.BuildingPlan,"Чертёж строительства","TOOL","Выбери секцию и поставь каркас из веток. R/колесо — секция, T — этаж, ЛКМ — установка.",1,0,new Color(.47f,.72f,.64f)),
+            new ItemDefinition(ItemId.Hammer,"Строительный молоток","TOOL","ЛКМ чинит повреждённую или улучшает целую секцию, ПКМ разбирает постройку.",1,0,new Color(.68f,.49f,.29f)),
+            new ItemDefinition(ItemId.Stone,"Камень","MAT","Каменные обломки для укрепления стен.",100,1,new Color(.57f,.58f,.52f)),
+            new ItemDefinition(ItemId.HighQualityMetal,"Металл высокого качества","MAT","Редкий сплав для бронированных секций.",100,3,new Color(.55f,.71f,.72f)),
+            new ItemDefinition(ItemId.StorageBox,"Домашний ящик","BUILD","Пустое личное хранилище. Ставится отдельно от мировых лут-кейсов.",1,0,new Color(.57f,.40f,.25f)),
+            new ItemDefinition(ItemId.WorkbenchStationI,"Верстак I","BUILD","Размести рядом с собой, чтобы открыть базовые рецепты.",1,1,new Color(.63f,.52f,.34f)),
+            new ItemDefinition(ItemId.WorkbenchStationII,"Верстак II","BUILD","Продвинутый верстак. Требует изученный чертёж и верстак I рядом.",1,2,new Color(.48f,.62f,.58f)),
+            new ItemDefinition(ItemId.ToolCupboard,"Шкаф строительных прав","BUILD","Задаёт личную зону привилегии и оплачивает upkeep ресурсами из своего запаса.",1,1,new Color(.42f,.54f,.49f))
         };
 
         public static ItemDefinition Get(ItemId id)
@@ -136,6 +146,16 @@ namespace Subsistence
             if(!CanFitCombined(id,amount)){Notify("Недостаточно места в рюкзаке.");return false;}
             int remainder=InsertInto(Backpack,id,amount);if(remainder>0)remainder=InsertInto(Belt,id,remainder);
             AudioDirector.Instance?.Play("metal",.22f);RecalculateArmor();return remainder==0;
+        }
+        public bool TrySpend(ItemId id,int amount)
+        {
+            if(amount<=0)return true;
+            if(Count(id)<amount)
+            {
+                string message="Недостаточно ресурса: "+ItemCatalog.Get(id).name+" ×"+amount+".";
+                Notify(message);RunState.Instance?.Notify(message);return false;
+            }
+            Consume(id,amount);return true;
         }
         public bool TradeForGreenCard(int scrapCost)
         {
@@ -269,6 +289,45 @@ namespace Subsistence
             var s=Backpack[index];Backpack[index].Clear();WorldItem.Spawn(s.id,s.count,transform.position+Vector3.right*1.1f);Notify("Предмет выброшен.");
         }
 
+        public bool CraftBuildingPlan()
+        {
+            if(Count(ItemId.Wood)<20){Notify("Для чертежа строительства нужны 20 досок.");return false;}
+            if(!CanFitCombined(ItemId.BuildingPlan,1)){Notify("Освободи место для чертежа строительства.");return false;}
+            Consume(ItemId.Wood,20);Add(ItemId.BuildingPlan,1);Notify("Чертёж строительства готов. Выбери его на поясе.");return true;
+        }
+        public bool CraftHammer()
+        {
+            if(Count(ItemId.Wood)<100){Notify("Для строительного молотка нужны 100 досок.");return false;}
+            if(!CanFitCombined(ItemId.Hammer,1)){Notify("Освободи место для строительного молотка.");return false;}
+            Consume(ItemId.Wood,100);Add(ItemId.Hammer,1);Notify("Строительный молоток изготовлен.");return true;
+        }
+        public bool CraftStorageBox()
+        {
+            if(Count(ItemId.Wood)<40){Notify("Для домашнего ящика нужны 40 досок.");return false;}
+            if(!CanFitCombined(ItemId.StorageBox,1)){Notify("Освободи место для домашнего ящика.");return false;}
+            Consume(ItemId.Wood,40);Add(ItemId.StorageBox,1);Notify("Домашний ящик собран. Выбери его на поясе и поставь.");return true;
+        }
+        public bool CraftWorkbenchStationI()
+        {
+            if(Count(ItemId.Wood)<80||Count(ItemId.MetalFragments)<5){Notify("Для верстака I нужны 80 досок и 5 фрагментов металла.");return false;}
+            if(!CanFitCombined(ItemId.WorkbenchStationI,1)){Notify("Освободи место для верстака I.");return false;}
+            Consume(ItemId.Wood,80);Consume(ItemId.MetalFragments,5);Add(ItemId.WorkbenchStationI,1);Notify("Верстак I собран. Размести его, чтобы открыть базовый крафт.");return true;
+        }
+        public bool CraftWorkbenchStationII()
+        {
+            if(!workbenchIIKnown){Notify("Нужен изученный чертёж верстака II.");return false;}
+            if(WorkbenchTier<1){Notify("Для сборки верстака II нужен верстак I поблизости.");return false;}
+            if(Count(ItemId.Wood)<200||Count(ItemId.MetalFragments)<25){Notify("Для верстака II нужны 200 досок и 25 фрагментов металла.");return false;}
+            if(!CanFitCombined(ItemId.WorkbenchStationII,1)){Notify("Освободи место для верстака II.");return false;}
+            Consume(ItemId.Wood,200);Consume(ItemId.MetalFragments,25);Add(ItemId.WorkbenchStationII,1);Notify("Верстак II собран. Размести его рядом с базой.");return true;
+        }
+        public bool CraftToolCupboard()
+        {
+            if(Count(ItemId.Wood)<100||Count(ItemId.MetalFragments)<10){Notify("Для шкафа строительных прав нужны 100 досок и 10 фрагментов металла.");return false;}
+            if(!CanFitCombined(ItemId.ToolCupboard,1)){Notify("Освободи место для шкафа строительных прав.");return false;}
+            Consume(ItemId.Wood,100);Consume(ItemId.MetalFragments,10);Add(ItemId.ToolCupboard,1);
+            Notify("Шкаф строительных прав собран. Размести его, затем пополни upkeep-ресурсы.");return true;
+        }
         public bool CraftBandage()
         {
             if(Count(ItemId.Cloth)<2){Notify("Для бинта нужны 2 единицы ткани.");return false;}
