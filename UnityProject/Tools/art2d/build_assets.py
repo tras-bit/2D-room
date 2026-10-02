@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -111,6 +111,10 @@ TILE_JOBS = [
     ("ceiling_level1", "tile_ceiling_l1", (384, 48), True),
     ("manila_wall", "tile_manila", (384, 384), True),
 ]
+# The Level 1 source contains many tiny high-contrast marks. Suppress those
+# after palette quantisation so the wall reads behind sprites instead of
+# competing with them; keep its larger panel seams and water damage intact.
+TILE_OPTIONS = {"wall_level1": {"dither": False, "median_filter": 7}}
 
 CHAR_TARGET = {
     "px_survivor_idle": 144, "px_survivor_walkA": 146, "px_survivor_walkB": 144,
@@ -175,7 +179,7 @@ def seal_palette_edges(img: Image.Image, palette, weights) -> Image.Image:
     return Image.fromarray(arr, "RGBA")
 
 
-def process_tile(source: Path, size, seamless=True):
+def process_tile(source: Path, size, seamless=True, dither=True, median_filter=0):
     img = Image.open(source).convert("RGB")
     # Crop to the requested aspect ratio before pixel-art downscaling.
     tw, th = size
@@ -193,7 +197,12 @@ def process_tile(source: Path, size, seamless=True):
     if seamless:
         img = make_seamless(img)
     palette, weights = sg.build_palette(MATERIAL_RAMPS)
-    img = sg.quantise(img, palette, weights, alpha_cut=0, dither=True)
+    img = sg.quantise(img, palette, weights, alpha_cut=0, dither=dither)
+    if median_filter > 1:
+        img = img.filter(ImageFilter.MedianFilter(median_filter))
+        # The per-channel median can combine RGB values from different ramp
+        # colors; quantise again to keep the shared material palette exact.
+        img = sg.quantise(img, palette, weights, alpha_cut=0, dither=False)
     if seamless:
         img = seal_palette_edges(img, palette, weights)
     return img
@@ -329,9 +338,11 @@ def build_tiles():
             img.save(TILES / f"{name}.png")
             print(f"  {name} (seamless procedural fallback)")
             continue
-        img = process_tile(src, size, seamless)
+        img = process_tile(src, size, seamless, **TILE_OPTIONS.get(name, {}))
         img.save(TILES / f"{name}.png")
-        print(f"  {name} {img.size} -> {TILES.name}/{name}.png")
+        options = TILE_OPTIONS.get(name, {})
+        detail = f" (median {options['median_filter']}×{options['median_filter']}, no dither)" if options.get("median_filter") else ""
+        print(f"  {name} {img.size}{detail} -> {TILES.name}/{name}.png")
 
 
 # --------------------------------------------------------------------------

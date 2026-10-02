@@ -49,7 +49,7 @@
 
 - `Assets/Scripts/WorldBuilder2D.cs`, `PixelArtFactory.cs`, `CharacterVisual2D.cs` — построение бокового 2D-мира и загрузка игровых спрайтов.
 - `Assets/Resources/Art/PixelArt/characters.png` и `props.png` — атласы персонажей и объектов; прямоугольники и пивоты записаны в генерируемом `Assets/Scripts/PixelArtAtlas.cs`.
-- `Assets/Resources/Art/Tiles/` — тайлы Level 0, Level 1 и Manila Room; в отсутствие исходного рисунка применяется палитровый fallback.
+- `Assets/Resources/Art/Tiles/` — все семь тайлов Level 0, Level 1 и Manila Room пересобираются из PNG в `ArtSource/raw/`; fallback остаётся только для отсутствующего исходника.
 - `ArtSource/raw/` — исходные PNG вне `Resources`, чтобы Unity не включала рабочие исходники в runtime-ресурсы. Инструкция по именованию и сборке — [`ART_PIPELINE.md`](ART_PIPELINE.md).
 - `Assets/Scripts/CameraFollow2D.cs`, `PlayerController.cs` — ортографическая камера, движение по Rigidbody2D и 2D-свет фонаря; `PixelFrameAnimator.cs` проигрывает кадры спрайтов.
 - `Assets/Scripts/GraphicsBootstrap2D.cs`, `WorldLighting2D.cs`, `ParallaxSystem2D.cs` — URP 2D Renderer, свет, тени и parallax-слои.

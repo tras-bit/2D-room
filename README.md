@@ -22,9 +22,9 @@ Open `UnityProject/` in Unity Hub using Editor **2022.3.62f2**. The game uses UR
 - Level 1: stained industrial service passages, pipes, doors and elevators.
 - Controls, setup and project status: [`UnityProject/README.md`](UnityProject/README.md).
 - Art source naming and rebuild instructions: [`UnityProject/ART_PIPELINE.md`](UnityProject/ART_PIPELINE.md).
-- A mock Level 0 asset preview is in [`docs/preview/`](docs/preview/).
+- Side-view mockups for both levels are in [`docs/preview/`](docs/preview/).
 
-The project currently uses detailed character sprites and pixel-art atlases. Several prop and environment textures still use palette-matched fallbacks until their painted source PNGs are added to `UnityProject/ArtSource/raw/`. Inventory icons have an in-game pictogram fallback. The generation pipeline and source list are documented so those assets can be replaced without changing gameplay code.
+The seven environment materials now use source pixel art. Three of 14 props are newly painted and integrated (crate tier 1, workbench tier 1 and the door); the other 11 use palette-matched fallbacks. Inventory icons still use the in-game pictogram fallback. The pipeline lets remaining art be added without changing gameplay code.
 
 ## Rebuild art and run static checks
 
